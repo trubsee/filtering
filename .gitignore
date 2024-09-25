@@ -1,0 +1,9 @@
+build/*
+build.clang/*
+data/*
+data
+compile_commands.json
+.cache
+.vs
+out
+*.sw*
