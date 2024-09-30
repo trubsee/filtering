@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 message("CMAKE VERSION: " "${CMAKE_VERSIONS}")
 
-project (Filtering)
+project (TimeSeries)
 
 # Project wide CXX flags
 string(CONCAT CXX_IGNORES
@@ -29,6 +29,8 @@ set(CMAKE_BUILD_TYPE Debug)
 
 include(FetchContent)
 
+find_package(ALGLIB REQUIRED)
+
 # --- GOOGLETEST --- #
 FetchContent_Declare(
   googletest
@@ -50,7 +52,8 @@ FetchContent_MakeAvailable(Eigen)
 include_directories(".")
 
 list(APPEND SOURCE_DIRECTORIES
-    "kalmanFilter"
+    "common"
+    "filters"
 )
 foreach (DIR IN LISTS SOURCE_DIRECTORIES)
     add_subdirectory(${DIR})

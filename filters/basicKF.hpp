@@ -2,7 +2,9 @@
 
 #include <Eigen/Dense>
 
-namespace KalmanFilter {
+#include "common/assert.hpp"
+
+namespace Filters {
 
 class BasicKF
 {
@@ -14,16 +16,7 @@ public:
         const Eigen::MatrixXd& observationModel,
         const Eigen::MatrixXd& processNoise,
         const Eigen::MatrixXd& observationNoise
-    )
-    :
-        x{stateEstimate},
-        P{covEstimate},
-        F{stateTransition},
-        H{observationModel},
-        Q{processNoise},
-        R{observationNoise}
-    {
-    }
+    );
 
     void Update(const Eigen::MatrixXd& obs);
 
@@ -31,10 +24,22 @@ public:
 
     const Eigen::MatrixXd Predict() const { return F * x; }
 
+    std::pair<const Eigen::MatrixXd&, const Eigen::MatrixXd&> GetLastInnovation() const
+    {
+        ASSERT(y.cols() == 1 && y.rows() == x.rows());
+        ASSERT(S.cols() == y.rows() && S.rows() == y.rows());
+        return {y, S};
+    }
+
 private:
+    // current estimate
     Eigen::MatrixXd x;
     Eigen::MatrixXd P;
+    // innovations
+    Eigen::MatrixXd y;
+    Eigen::MatrixXd S;
 
+    // model params
     Eigen::MatrixXd F;
     Eigen::MatrixXd H;
     Eigen::MatrixXd Q;
