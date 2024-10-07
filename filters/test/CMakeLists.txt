@@ -4,6 +4,7 @@ include (GoogleTest)
 
 add_executable(filtersTest
     basicKFTest.cpp
+    particleFilterTest.cpp
 )
 
 target_link_libraries(filtersTest

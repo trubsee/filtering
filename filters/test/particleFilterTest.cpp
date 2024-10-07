@@ -2,13 +2,44 @@
 #include <numeric>
 #include <random>
 
+#include <Eigen/Cholesky>
+
 #include "libalglib/statistics.h"
 #include "gtest/gtest.h"
 
-#include "filters/basicKF.hpp"
+#include "filters/particleFilter.hpp"
 
 namespace Filters {
 
+class RandomWalk
+{
+    RandomWalk(const Eigen::MatrixXd& covarianceMatrix)
+    :
+        mVariables{covarianceMatrix.rows()},
+        mRandomDevice{},
+        mGen{mRandomDevice()}
+    {
+        ASSERT(covarianceMatrix.rows() == covarianceMatrix.cols());
+        mTril = covarianceMatrix.llt().matrixL();
+    }
+
+    Eigen::MatrixXd mutate(Eigen::MatrixXd input)
+    {
+        Eigen::VectorXd randomVariables(mVariables); 
+        for (unsigned i = 0; i < mVariables; ++i)
+            randomVariables(i) = mNorm(mGen);
+        return input + randomVariables * mTril;
+    }
+private:
+    const Eigen::Index mVariables;
+    Eigen::MatrixXd mTril;
+
+    std::random_device mRandomDevice;
+    std::mt19937 mGen;
+    std::normal_distribution<double> mNorm{0, 1};
+};
+
+/*
 TEST(KalmanFilterTest, CheckZeroDrift)
 {
     BasicKF kf {
@@ -45,7 +76,8 @@ TEST(KalmanFilterTest, ObsMoreThanHidden)
     }
     EXPECT_NEAR(kf.Estimate()(0, 0), 10, 0.01);
 }
-
+*/
+/*
 TEST(KalmanFilterTest, HypothesisTest)
 {
     std::random_device rd{};
@@ -95,5 +127,6 @@ TEST(KalmanFilterTest, HypothesisTest)
     v2.setcontent(innovations.size()-1, &(innovations[1]));
     EXPECT_NEAR(alglib::pearsoncorr2(v1, v2), 0., 0.1);
 }
+*/
 
 }
