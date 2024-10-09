@@ -1,7 +1,7 @@
 enable_testing()
 
 add_library(filters
-    basicKF.hpp basicKF.cpp
+    kalmanFilter.hpp kalmanFilter.cpp
     particleFilter.hpp particleFilter.cpp
 )
 
@@ -11,4 +11,5 @@ target_link_libraries(filters
     alglib
     Eigen3::Eigen
     common
+    stochasticModels
 )

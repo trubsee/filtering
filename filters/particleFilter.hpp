@@ -12,6 +12,7 @@ class ParticleFilter
 {
 public:
     ParticleFilter(
+        unsigned numberOfParticles,
         unsigned numberOfHiddenVariables,
         std::function<Eigen::MatrixXd()> const& initialSampler,
         std::function<Eigen::MatrixXd(const Eigen::MatrixXd&)> const& transitionSampler,
@@ -22,9 +23,10 @@ public:
         mTransitionSampler{transitionSampler},
         mProbabilityObserved{probabilityObserved},
         mNumHidden{numberOfHiddenVariables},
-        mNumParticles{1000},
+        mNumParticles{numberOfParticles},
         mParticles(mNumParticles, mNumHidden),
         mWeights(mNumParticles),
+        mEstimate{Eigen::MatrixXd::Zero(1, mNumHidden)},
         mRandomDevice{},
         mGen{mRandomDevice()}
     {
@@ -41,7 +43,7 @@ private:
         {
             auto sample = mInitialSampler();
             ASSERT(sample.cols() == 1 && sample.rows() == mNumHidden);
-            mParticles.block(i, 0, 1, mNumHidden);
+            mParticles.block(i, 0, 1, mNumHidden) = sample.transpose();
             mWeights[i] = 1. / mNumParticles;
         }
     }

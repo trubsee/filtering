@@ -13,13 +13,17 @@ void ParticleFilter::Update(const Eigen::MatrixXd& obs)
         // Predict
         newParticles.block(i, 0, 1, mNumHidden) = mTransitionSampler(particle);
         // Estimate
-        probs[i] = mProbabilityObserved(obs, particle);
+        probs[i] = mProbabilityObserved(obs, particle.transpose()) + 1e-300;
     }
 
     mParticles = newParticles;
     double sumWeight = std::accumulate(probs.begin(), probs.end(), 0.);
+    mEstimate *= 0;
     for (unsigned i = 0; i < mNumParticles; ++i)
+    {
         mWeights[i] = probs[i] / sumWeight;
+        mEstimate += mWeights[i] * mParticles.block(i, 0, 1, mNumHidden);
+    }
 }
 
 }

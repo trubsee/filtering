@@ -54,6 +54,7 @@ include_directories(".")
 list(APPEND SOURCE_DIRECTORIES
     "common"
     "filters"
+    "stochasticModels"
 )
 foreach (DIR IN LISTS SOURCE_DIRECTORIES)
     add_subdirectory(${DIR})

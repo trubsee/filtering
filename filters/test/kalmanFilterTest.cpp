@@ -5,9 +5,9 @@
 #include "libalglib/statistics.h"
 #include "gtest/gtest.h"
 
-#include "filters/basicKF.hpp"
+#include "filters/kalmanFilter.hpp"
 
-namespace Filters {
+namespace Filters::Test {
 
 TEST(KalmanFilterTest, CheckZeroDrift)
 {

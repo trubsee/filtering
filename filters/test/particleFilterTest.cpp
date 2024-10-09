@@ -1,64 +1,38 @@
 #include <cmath>
-#include <numeric>
-#include <random>
 
-#include <Eigen/Cholesky>
-
-#include "libalglib/statistics.h"
 #include "gtest/gtest.h"
 
+#include "stochasticModels/randomWalk.hpp"
 #include "filters/particleFilter.hpp"
 
-namespace Filters {
+namespace Filters::Test {
 
-class RandomWalk
+TEST(ParticleFilterTest, CheckZeroDrift)
 {
-    RandomWalk(const Eigen::MatrixXd& covarianceMatrix)
-    :
-        mVariables{covarianceMatrix.rows()},
-        mRandomDevice{},
-        mGen{mRandomDevice()}
-    {
-        ASSERT(covarianceMatrix.rows() == covarianceMatrix.cols());
-        mTril = covarianceMatrix.llt().matrixL();
-    }
+    const Eigen::MatrixXd initial {{1}, {12}};
+    const Eigen::MatrixXd covInit {{1, 0}, {0, 2}};
+    StochasticModels::RandomWalk rwInit {covInit};
+    const Eigen::MatrixXd covNoise {{0.1, 0}, {0, 0.2}};
+    StochasticModels::RandomWalk rwNoise {covNoise};
 
-    Eigen::MatrixXd mutate(Eigen::MatrixXd input)
-    {
-        Eigen::VectorXd randomVariables(mVariables); 
-        for (unsigned i = 0; i < mVariables; ++i)
-            randomVariables(i) = mNorm(mGen);
-        return input + randomVariables * mTril;
-    }
-private:
-    const Eigen::Index mVariables;
-    Eigen::MatrixXd mTril;
-
-    std::random_device mRandomDevice;
-    std::mt19937 mGen;
-    std::normal_distribution<double> mNorm{0, 1};
-};
-
-/*
-TEST(KalmanFilterTest, CheckZeroDrift)
-{
-    BasicKF kf {
-        Eigen::MatrixXd{{0}, {10}},
-        Eigen::MatrixXd{{1, 0}, {0, 5}},
-        Eigen::MatrixXd{{1, 0}, {0, 1}},
-        Eigen::MatrixXd{{1, 0}, {0, 1}},
-        Eigen::MatrixXd{{0, 0}, {0, 0}},
-        Eigen::MatrixXd{{0.5, 0}, {0, 2}}
+    ParticleFilter pf {
+        1000,
+        2,
+        [&rwInit, &initial](){ return rwInit.Mutate(initial); },
+        [](const Eigen::MatrixXd& input){ return input; },
+        [&rwNoise](const Eigen::MatrixXd& obs, const Eigen::MatrixXd particle){ return rwNoise.Probability(obs, particle); }
     };
 
-    for (unsigned i = 0; i < 1000 ; ++i)
+    for (unsigned i = 0; i < 100; ++i)
     {
-        kf.Update(Eigen::MatrixXd{{1}, {12}});
+        pf.Update(Eigen::MatrixXd{{1}, {12}});
     }
-    EXPECT_NEAR(kf.Estimate()(0, 0), 1, 0.01);
-    EXPECT_NEAR(kf.Estimate()(1, 0), 12, 0.01);
+    // ParticleFilter Sufffers from Particle Impoverishment when there is no drift
+    EXPECT_NEAR(pf.Estimate()(0, 0), 1, 0.1);
+    EXPECT_NEAR(pf.Estimate()(0, 1), 12, 0.1);
 }
 
+/*
 TEST(KalmanFilterTest, ObsMoreThanHidden)
 {
     BasicKF kf {
