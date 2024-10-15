@@ -6,44 +6,54 @@
 
 namespace Filters {
 
+template<int hidden, int observed>
 class BasicKF
 {
 public:
+    using HiddenMatrix = Eigen::Matrix<double, hidden, hidden>;
+    using HiddenVector = Eigen::Vector<double, hidden>;
+    using ObservedMatrix = Eigen::Matrix<double, observed, observed>;
+    using ObservedVector = Eigen::Vector<double, observed>;
+    
     BasicKF(
-        const Eigen::MatrixXd& stateEstimate,
-        const Eigen::MatrixXd& covEstimate,
-        const Eigen::MatrixXd& stateTransition,
-        const Eigen::MatrixXd& observationModel,
-        const Eigen::MatrixXd& processNoise,
-        const Eigen::MatrixXd& observationNoise
-    );
-
-    void Update(const Eigen::MatrixXd& obs);
-
-    const Eigen::MatrixXd& Estimate() const { return x; }
-
-    const Eigen::MatrixXd Predict() const { return F * x; }
-
-    std::pair<const Eigen::MatrixXd&, const Eigen::MatrixXd&> GetLastInnovation() const
+        const HiddenVector& stateEstimate,
+        const HiddenMatrix& covEstimate,
+        const HiddenMatrix& stateTransition,
+        const Eigen::Matrix<double, observed, hidden>& observationModel,
+        const HiddenMatrix& processNoise,
+        const ObservedMatrix& observationNoise
+    )
+    :
+        x{stateEstimate},
+        P{covEstimate},
+        F{stateTransition},
+        H{observationModel},
+        Q{processNoise},
+        R{observationNoise}
     {
-        ASSERT(y.cols() == 1 && y.rows() == x.rows());
-        ASSERT(S.cols() == y.rows() && S.rows() == y.rows());
-        return {y, S};
     }
+
+    void Update(const ObservedVector& obs);
+
+    const HiddenVector& Estimate() const { return x; }
+
+    const HiddenVector Predict() const { return F * x; }
+
+    std::pair<const HiddenVector&, const HiddenMatrix&> GetLastInnovation() const { return {y, S}; }
 
 private:
     // current estimate
-    Eigen::MatrixXd x;
-    Eigen::MatrixXd P;
+    HiddenVector x;
+    HiddenMatrix P;
     // innovations
-    Eigen::MatrixXd y;
-    Eigen::MatrixXd S;
+    ObservedVector y;
+    ObservedMatrix S;
 
     // model params
-    Eigen::MatrixXd F;
-    Eigen::MatrixXd H;
-    Eigen::MatrixXd Q;
-    Eigen::MatrixXd R;
+    HiddenMatrix F;
+    Eigen::Matrix<double, observed, hidden> H;
+    HiddenMatrix Q;
+    ObservedMatrix R;
 };
 
 }

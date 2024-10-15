@@ -1,7 +1,7 @@
 enable_testing()
 
 add_library(filters
-    kalmanFilter.hpp kalmanFilter.cpp
+    kalmanFilter.hpp kalmanFilter.ipp
     particleFilter.hpp particleFilter.cpp
 )
 

@@ -5,45 +5,46 @@
 #include "libalglib/statistics.h"
 #include "gtest/gtest.h"
 
-#include "filters/kalmanFilter.hpp"
+#include "filters/kalmanFilter.ipp"
 
 namespace Filters::Test {
 
 TEST(KalmanFilterTest, CheckZeroDrift)
 {
-    BasicKF kf {
-        Eigen::MatrixXd{{0}, {10}},
-        Eigen::MatrixXd{{1, 0}, {0, 5}},
-        Eigen::MatrixXd{{1, 0}, {0, 1}},
-        Eigen::MatrixXd{{1, 0}, {0, 1}},
-        Eigen::MatrixXd{{0, 0}, {0, 0}},
-        Eigen::MatrixXd{{0.5, 0}, {0, 2}}
+    BasicKF<2, 2> kf {
+        Eigen::Vector2d{0, 10},
+        Eigen::Matrix2d{{1, 0}, {0, 5}},
+        Eigen::Matrix2d{{1, 0}, {0, 1}},
+        Eigen::Matrix2d{{1, 0}, {0, 1}},
+        Eigen::Matrix2d{{0, 0}, {0, 0}},
+        Eigen::Matrix2d{{0.5, 0}, {0, 2}}
     };
 
     for (unsigned i = 0; i < 1000 ; ++i)
     {
-        kf.Update(Eigen::MatrixXd{{1}, {12}});
+        kf.Update(Eigen::Vector2d{1, 12});
     }
-    EXPECT_NEAR(kf.Estimate()(0, 0), 1, 0.01);
-    EXPECT_NEAR(kf.Estimate()(1, 0), 12, 0.01);
+    EXPECT_NEAR(kf.Estimate()(0), 1, 0.01);
+    EXPECT_NEAR(kf.Estimate()(1), 12, 0.01);
 }
 
 TEST(KalmanFilterTest, ObsMoreThanHidden)
 {
-    BasicKF kf {
-        Eigen::MatrixXd{{0}},
-        Eigen::MatrixXd{{1}},
-        Eigen::MatrixXd{{1}},
-        Eigen::MatrixXd{{1}, {1}},
-        Eigen::MatrixXd{{0.1}},
-        Eigen::MatrixXd{{1, 0}, {0, 1}}
+    BasicKF<2, 3> kf {
+        Eigen::Vector2d{0, 0},
+        Eigen::Matrix2d{{1, 0}, {0, 1}},
+        Eigen::Matrix2d{{1, 0}, {0, 1}},
+        Eigen::MatrixXd{{1, 0}, {1, 0}, {0, 1}},
+        Eigen::Matrix2d{{0.1, 0}, {0, 0.1}},
+        Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}
     };
 
-    for (unsigned i = 0; i < 1000 ; ++i)
+    for (unsigned i = 0; i < 1000; ++i)
     {
-        kf.Update(Eigen::MatrixXd{{10.1}, {9.9}});
+        kf.Update(Eigen::Vector3d{10.1, 9.9, 5.});
     }
-    EXPECT_NEAR(kf.Estimate()(0, 0), 10, 0.01);
+    EXPECT_NEAR(kf.Estimate()(0), 10, 0.01);
+    EXPECT_NEAR(kf.Estimate()(1), 5, 0.01);
 }
 
 TEST(KalmanFilterTest, HypothesisTest)
@@ -57,7 +58,7 @@ TEST(KalmanFilterTest, HypothesisTest)
     const double noise{0.1};
     std::normal_distribution<double> noiseG{0, std::sqrt(noise)};
 
-    BasicKF kf {
+    BasicKF<1, 1> kf {
         Eigen::MatrixXd{{initial}},
         Eigen::MatrixXd{{1}},
         Eigen::MatrixXd{{1}},
@@ -75,7 +76,7 @@ TEST(KalmanFilterTest, HypothesisTest)
     {
         // generate fake obs
         auto obs = hiddenState + noiseG(gen);
-        kf.Update(Eigen::MatrixXd{{obs}});
+        kf.Update(Eigen::VectorXd{{obs}});
        
         // store data
         auto [innovation, innVar] = kf.GetLastInnovation();

@@ -1,7 +1,7 @@
 enable_testing()
 
 add_library(stochasticModels
-    randomWalk.hpp randomWalk.cpp
+    randomWalk.hpp randomWalk.ipp
 )
 
 add_subdirectory(test)

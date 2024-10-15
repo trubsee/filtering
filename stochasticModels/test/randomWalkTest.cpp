@@ -2,16 +2,16 @@
 #include "gtest/gtest.h"
 
 #include "common/constants.hpp"
-#include "stochasticModels/randomWalk.hpp"
+#include "stochasticModels/randomWalk.ipp"
 
 namespace StochasticModels::Test {
 
 TEST(RandomWalkTest, CheckParam)
 {
-    const Eigen::MatrixXd cov {{1, 0.5}, {0.5, 2}};
+    const Eigen::Matrix2d cov {{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
 
-    RandomWalk rw{cov};
+    RandomWalk<2> rw{cov};
   
     EXPECT_EQ(rw.GetCoeffMatrix(), Eigen::MatrixXd::Identity(2, 2));
     EXPECT_EQ(rw.GetNoiseMatrix(), cov);
@@ -19,10 +19,10 @@ TEST(RandomWalkTest, CheckParam)
 
 TEST(RandomWalkTest, CheckMutate)
 {
-    const Eigen::MatrixXd initial {{1}, {12}};
-    const Eigen::MatrixXd cov {{1, 0.5}, {0.5, 2}};
+    const Eigen::Vector2d initial {1, 12};
+    const Eigen::Matrix2d cov {{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
-    RandomWalk rw{cov};
+    RandomWalk<2> rw{cov};
 
     const unsigned ITER{100000};
     std::vector<double> mutations (ITER * 2);
@@ -48,20 +48,20 @@ TEST(RandomWalkTest, CheckMutate)
 
 TEST(RandomWalkTest, CheckProbability)
 {
-    const Eigen::MatrixXd cov {{1, 0.5}, {0.5, 2}};
+    const Eigen::Matrix2d cov {{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
-    RandomWalk rw{cov};
+    RandomWalk<2> rw{cov};
     
-    const Eigen::MatrixXd m1 {{4}, {6}};
+    const Eigen::Vector2d m1 {4, 6};
     auto prob = rw.Probability(m1, m1);
  
     auto max = 1 / std::sqrt(std::pow(2 * PI, 2) * cov.determinant());
     EXPECT_EQ(prob, max);
 
-    const Eigen::MatrixXd m2 {{3}, {6}};
+    const Eigen::Vector2d m2 {3, 6};
     prob = rw.Probability(m1, m2);
     auto relative = (m1 - m2).transpose() * cov.inverse() * (m1 - m2);
-    EXPECT_EQ(max * std::exp(-relative(0, 0)), prob);
+    EXPECT_EQ(max * std::exp(-relative(0)), prob);
 }
 
 }

@@ -2,27 +2,33 @@
 
 #include <random>
 
+#include <Eigen/Cholesky>
 #include <Eigen/Dense>
 
 namespace StochasticModels {
 
+template <int num> 
 class RandomWalk
 {
 public:
-    RandomWalk(const Eigen::MatrixXd& covarianceMatrix);
+    using Matrix = Eigen::Matrix<double, num, num>;
+    using Vector = Eigen::Vector<double, num>;
 
-    Eigen::MatrixXd Mutate(const Eigen::MatrixXd& input) const;
+    RandomWalk(const Matrix& covarianceMatrix);
 
-    double Probability(const Eigen::MatrixXd& m1, const Eigen::MatrixXd& m2) const;
+    Vector Mutate(const Vector& input) const;
+
+    double Probability(const Vector& m1, const Vector& m2) const;
 
     // Linear Operators
-    Eigen::MatrixXd GetCoeffMatrix() const { return Eigen::MatrixXd::Identity(mNumVariables, mNumVariables); }
+    Matrix GetCoeffMatrix() const { return Matrix::Identity(); }
 
-    Eigen::MatrixXd GetNoiseMatrix() const { return mTril * mTril.transpose(); }
+    Matrix GetNoiseMatrix() const { return mTril * mTril.transpose(); }
 
 private:
-    const Eigen::Index mNumVariables;
-    Eigen::MatrixXd mTril;
+    Matrix mTril;
+    Matrix mInverseNoise;
+    double mMaxProb;
 
     std::random_device mRandomDevice;
     mutable std::mt19937 mGen;
