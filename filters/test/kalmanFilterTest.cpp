@@ -5,6 +5,7 @@
 #include "libalglib/statistics.h"
 #include "gtest/gtest.h"
 
+#include "common/randomSample.hpp"
 #include "filters/kalmanFilter.ipp"
 
 namespace Filters::Test {
@@ -49,14 +50,9 @@ TEST(KalmanFilterTest, ObsMoreThanHidden)
 
 TEST(KalmanFilterTest, HypothesisTest)
 {
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
-
     const double initial{0.};
     const double drift{0.5};
-    std::normal_distribution<double> driftG{0, std::sqrt(drift)};
     const double noise{0.1};
-    std::normal_distribution<double> noiseG{0, std::sqrt(noise)};
 
     BasicKF<1, 1> kf {
         Eigen::MatrixXd{{initial}},
@@ -70,19 +66,19 @@ TEST(KalmanFilterTest, HypothesisTest)
     const unsigned ITER{10000};
     std::vector<double> innovations(ITER);
     std::vector<double> normInnovations(ITER);
-    auto hiddenState = initial + driftG(gen);
+    auto hiddenState = initial + Common::sampleNormal() * std::sqrt(drift);
 
     for (unsigned i = 0; i < ITER; ++i)
     {
         // generate fake obs
-        auto obs = hiddenState + noiseG(gen);
+        auto obs = hiddenState + Common::sampleNormal() * std::sqrt(noise);
         kf.Update(Eigen::VectorXd{{obs}});
        
         // store data
         auto [innovation, innVar] = kf.GetLastInnovation();
         innovations.emplace_back(innovation(0, 0));
         normInnovations.emplace_back(std::pow(innovation(0, 0), 2) / innVar(0, 0));
-        hiddenState += driftG(gen);
+        hiddenState += Common::sampleNormal() * std::sqrt(drift);
     }
     
     // Chi-squared Test

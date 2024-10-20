@@ -1,7 +1,5 @@
 #pragma once
 
-#include <random>
-
 #include <Eigen/Cholesky>
 #include <Eigen/Dense>
 
@@ -29,10 +27,6 @@ private:
     Matrix mTril;
     Matrix mInverseNoise;
     double mMaxProb;
-
-    std::random_device mRandomDevice;
-    mutable std::mt19937 mGen;
-    mutable std::normal_distribution<double> mNorm{0, 1};
 };
 
 }

@@ -2,4 +2,4 @@
 
 #include <cmath>
 
-const double PI {2 * std::acos(0.)};
+constexpr double PI = 3.141592653;

@@ -1,6 +1,5 @@
 #pragma once
 #include <functional>
-#include <random>
 
 #include <Eigen/Dense>
 
@@ -26,9 +25,7 @@ public:
         mNumParticles{numberOfParticles},
         mParticles(mNumParticles, mNumHidden),
         mWeights(mNumParticles),
-        mEstimate{Eigen::MatrixXd::Zero(1, mNumHidden)},
-        mRandomDevice{},
-        mGen{mRandomDevice()}
+        mEstimate{Eigen::MatrixXd::Zero(1, mNumHidden)}
     {
         initialiseParticles();
     }
@@ -58,9 +55,6 @@ private:
     std::vector<double> mWeights;
 
     Eigen::MatrixXd mEstimate;
-
-    std::random_device mRandomDevice;
-    std::mt19937 mGen;
 };
 
 }

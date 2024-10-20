@@ -4,15 +4,13 @@
 #include <iostream>
 
 #include "common/constants.hpp"
+#include "common/randomSample.hpp"
 #include "stochasticModels/randomWalk.hpp"
 
 namespace StochasticModels {
 
 template <int num>
 RandomWalk<num>::RandomWalk(const Matrix& covarianceMatrix)
-:
-    mRandomDevice{},
-    mGen{mRandomDevice()}
 {
     mTril = covarianceMatrix.llt().matrixL();
     mInverseNoise = covarianceMatrix.inverse();
@@ -24,7 +22,7 @@ typename RandomWalk<num>::Vector RandomWalk<num>::Mutate(const Vector& input) co
 {
     Vector randomVariables; 
     for (unsigned i = 0; i < num; ++i)
-        randomVariables(i) = mNorm(mGen);
+        randomVariables(i) = Common::sampleNormal();
     return input + mTril * randomVariables;
 }
 
