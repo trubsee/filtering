@@ -1,15 +1,17 @@
 #pragma once
 
+#include <optional>
 #include <Eigen/Dense>
 
 #include "stochasticModels/linearGaussian.hpp"
 
 namespace Filters {
 
-class KalmanFilter
+template <int numSamples = 1000>
+class StochasticEKF
 {
 public:
-    KalmanFilter(
+    StochasticEKF(
         const Eigen::VectorXd&,
         const Eigen::MatrixXd&,
         const StochasticModels::LinearGaussian&,
@@ -18,27 +20,28 @@ public:
 
     void Update(const Eigen::VectorXd&);
 
-    const Eigen::VectorXd& Estimate() const { return x; }
+    const Eigen::VectorXd& Predict();
 
-    Eigen::VectorXd Predict() const { return F * x; }
-
+    const Eigen::VectorXd& Estimate() const { return mEstimate; }
+    
     std::pair<const Eigen::VectorXd&, const Eigen::MatrixXd&> GetLastInnovation() const { return {y, S}; }
-
 private:
+    void InitialiseSamples(const Eigen::VectorXd&, const Eigen::MatrixXd&);
+
     // model params
-    Eigen::MatrixXd F;
+    const StochasticModels::LinearGaussian& mStateModel;
     Eigen::MatrixXd H;
-    Eigen::MatrixXd Q;
     Eigen::MatrixXd R;
     
     // dimensions
     const unsigned mHidden;
     const unsigned mObserved;
-    
-    // current estimate
-    Eigen::VectorXd x;
-    Eigen::MatrixXd P;
-    // innovations
+
+    // estimate samples 
+    Eigen::MatrixXd mSamples;
+    std::optional<Eigen::VectorXd> mPrediction;
+    Eigen::VectorXd mEstimate;
+    // innovation 
     Eigen::VectorXd y;
     Eigen::MatrixXd S;
 };

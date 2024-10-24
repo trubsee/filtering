@@ -1,6 +1,11 @@
 #pragma once
 
+#include <iostream>
 #include <random>
+
+#include <Eigen/Dense>
+
+#include "common/assert.hpp"
 
 namespace Common {
 
@@ -11,9 +16,18 @@ namespace {
     std::normal_distribution<double> mNorm{0, 1};
 }
 
-inline double sampleNormal()
+static double SampleNormal()
 {
     return mNorm(mGen);
+}
+
+static Eigen::VectorXd SampleMvNormal(const Eigen::MatrixXd& tril)
+{
+    ASSERT(tril.rows() == tril.cols());
+    Eigen::VectorXd randomVariables(tril.rows());
+    for (unsigned i = 0; i < tril.rows(); ++i)
+        randomVariables(i) = SampleNormal();
+    return tril * randomVariables;
 }
 
 class DiscreteDistribution
@@ -25,7 +39,7 @@ public:
     {
     }
 
-    int sample()
+    int Sample()
     {
         return mDistribution(mGen);
     }

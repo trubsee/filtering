@@ -6,12 +6,12 @@
 #include "gtest/gtest.h"
 
 #include "common/randomSample.hpp"
-#include "filters/kalmanFilter.hpp"
+#include "filters/stochasticEKF.ipp"
 #include "stochasticModels/linearFactoryMethods.hpp"
 
 namespace Filters::Test {
 
-TEST(KalmanFilterTest, CheckZeroDrift)
+TEST(StochasticEKFTest, CheckZeroDrift)
 {
     const auto stateModel {
         StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0, 0}, {0, 0}})
@@ -20,22 +20,24 @@ TEST(KalmanFilterTest, CheckZeroDrift)
         StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0.5, 0}, {0, 2}})
     };
 
-    KalmanFilter kf {
-        Eigen::Vector2d{0, 10},
-        Eigen::Matrix2d{{1, 0}, {0, 5}},
+    StochasticEKF<500> ekf {
+        Eigen::Vector2d{1, 10},
+        Eigen::Matrix2d{{1, 0}, {0, 10}},
         stateModel,
         obsModel
     };
 
-    for (unsigned i = 0; i < 1000 ; ++i)
+    for (unsigned i = 0; i < 1000; ++i)
     {
-        kf.Update(Eigen::Vector2d{1, 12});
+        ekf.Update(Eigen::Vector2d{1, 12});
     }
-    EXPECT_NEAR(kf.Estimate()(0), 1, 0.01);
-    EXPECT_NEAR(kf.Estimate()(1), 12, 0.01);
+    EXPECT_NEAR(ekf.Estimate()(0), 1, 0.1);
+    EXPECT_NEAR(ekf.Estimate()(1), 12, 0.1);
+    EXPECT_NEAR(ekf.Predict()(0), 1, 0.1);
+    EXPECT_NEAR(ekf.Predict()(1), 12, 0.1);
 }
 
-TEST(KalmanFilterTest, ObsMoreThanHidden)
+TEST(StochasticEKFTest, ObsMoreThanHidden)
 {
     const auto stateModel {
         StochasticModels::CreateRandomWalk(
@@ -47,7 +49,7 @@ TEST(KalmanFilterTest, ObsMoreThanHidden)
         Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}
     };
 
-    KalmanFilter kf {
+    StochasticEKF<500> ekf {
         Eigen::Vector2d{0, 0},
         Eigen::Matrix2d{{1, 0}, {0, 1}},
         stateModel,
@@ -56,15 +58,13 @@ TEST(KalmanFilterTest, ObsMoreThanHidden)
 
     for (unsigned i = 0; i < 1000; ++i)
     {
-        kf.Update(Eigen::Vector3d{10.1, 9.9, 5.});
+        ekf.Update(Eigen::Vector3d{10.1, 9.9, 5.});
     }
-    EXPECT_NEAR(kf.Estimate()(0), 10, 0.01);
-    EXPECT_NEAR(kf.Estimate()(1), 5, 0.01);
-    EXPECT_NEAR(kf.Predict()(0), 10, 0.01);
-    EXPECT_NEAR(kf.Predict()(1), 5, 0.01);
+    EXPECT_NEAR(ekf.Estimate()(0), 10, 0.1);
+    EXPECT_NEAR(ekf.Estimate()(1), 5, 0.1);
 }
 
-TEST(KalmanFilterTest, HypothesisTest)
+TEST(StochasticEKFTest, HypothesisTest)
 {
     const double initial{0.};
     const double drift{0.5};
@@ -76,14 +76,14 @@ TEST(KalmanFilterTest, HypothesisTest)
         StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{noise}})
     };
 
-    KalmanFilter kf {
+    StochasticEKF<500> ekf {
         Eigen::MatrixXd{{initial}},
         Eigen::MatrixXd{{1}},
         stateModel,
         obsModel
     };
 
-    const unsigned ITER{10000};
+    const unsigned ITER{1000};
     std::vector<double> innovations(ITER);
     std::vector<double> normInnovations(ITER);
     auto hiddenState = initial + Common::SampleNormal() * std::sqrt(drift);
@@ -92,10 +92,10 @@ TEST(KalmanFilterTest, HypothesisTest)
     {
         // generate fake obs
         auto obs = hiddenState + Common::SampleNormal() * std::sqrt(noise);
-        kf.Update(Eigen::VectorXd{{obs}});
+        ekf.Update(Eigen::VectorXd{{obs}});
        
         // store data
-        auto [innovation, innVar] = kf.GetLastInnovation();
+        auto [innovation, innVar] = ekf.GetLastInnovation();
         innovations.emplace_back(innovation(0, 0));
         normInnovations.emplace_back(std::pow(innovation(0, 0), 2) / innVar(0, 0));
         hiddenState += Common::SampleNormal() * std::sqrt(drift);
@@ -103,7 +103,7 @@ TEST(KalmanFilterTest, HypothesisTest)
     
     // Chi-squared Test
     const auto innovationSum = std::accumulate(normInnovations.begin(), normInnovations.end(), 0.);
-    EXPECT_NEAR(innovationSum / ITER, 1.1, 0.1);
+    EXPECT_NEAR(innovationSum / ITER, 1., 0.1);
 
     // Auto-Correlation Test
     alglib::real_1d_array v1;

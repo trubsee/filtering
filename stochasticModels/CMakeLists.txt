@@ -1,7 +1,9 @@
 enable_testing()
 
 add_library(stochasticModels
-    randomWalk.hpp randomWalk.ipp
+    linearFactoryMethods.hpp
+    linearGaussian.hpp linearGaussian.cpp
+    stochasticVolatility.hpp stochasticVolatility.cpp
 )
 
 add_subdirectory(test)

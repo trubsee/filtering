@@ -5,6 +5,7 @@ include (GoogleTest)
 add_executable(filtersTest
     kalmanFilterTest.cpp
     particleFilterTest.cpp
+    stochasticEKFTest.cpp
 )
 
 target_link_libraries(filtersTest

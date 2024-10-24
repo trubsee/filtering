@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-#include "stochasticModels/randomWalk.ipp"
+#include "stochasticModels/linearFactoryMethods.hpp"
 #include "filters/particleFilter.hpp"
 
 namespace Filters::Test {
@@ -11,9 +11,9 @@ TEST(ParticleFilterTest, CheckZeroDrift)
 {
     const Eigen::MatrixXd initial {{1}, {12}};
     const Eigen::MatrixXd covInit {{1, 0}, {0, 2}};
-    StochasticModels::RandomWalk<2> rwInit {covInit};
+    auto rwInit {StochasticModels::CreateRandomWalk(covInit)};
     const Eigen::MatrixXd covNoise {{0.1, 0}, {0, 0.2}};
-    StochasticModels::RandomWalk<2> rwNoise {covNoise};
+    auto rwNoise {StochasticModels::CreateRandomWalk(covNoise)};
 
     ParticleFilter pf {
         1000,

@@ -3,6 +3,9 @@ message("CMAKE VERSION: " "${CMAKE_VERSIONS}")
 
 project (TimeSeries)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Project wide CXX flags
 string(CONCAT CXX_IGNORES
     "-Wno-unknown-warning-option "

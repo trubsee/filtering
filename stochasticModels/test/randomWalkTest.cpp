@@ -1,8 +1,8 @@
-#include "libalglib/statistics.h"
 #include "gtest/gtest.h"
 
 #include "common/constants.hpp"
-#include "stochasticModels/randomWalk.ipp"
+#include "common/statistics.hpp"
+#include "stochasticModels/linearFactoryMethods.hpp"
 
 namespace StochasticModels::Test {
 
@@ -11,9 +11,9 @@ TEST(RandomWalkTest, CheckParam)
     const Eigen::Matrix2d cov {{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
 
-    RandomWalk<2> rw{cov};
+    auto rw {CreateRandomWalk(cov)};
   
-    EXPECT_EQ(rw.GetCoeffMatrix(), Eigen::MatrixXd::Identity(2, 2));
+    EXPECT_EQ(rw.GetCoefMatrix(), Eigen::MatrixXd::Identity(2, 2));
     EXPECT_EQ(rw.GetNoiseMatrix(), cov);
 }
 
@@ -22,20 +22,16 @@ TEST(RandomWalkTest, CheckMutate)
     const Eigen::Vector2d initial {1, 12};
     const Eigen::Matrix2d cov {{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
-    RandomWalk<2> rw{cov};
+    auto rw{CreateRandomWalk(cov)};
 
     const unsigned ITER{100000};
-    std::vector<double> mutations (ITER * 2);
+    Eigen::MatrixXd mutations(ITER, 2);
     for (unsigned i = 0; i < ITER; ++i)
     {
-        const auto mutated = rw.Mutate(initial);
-        for (unsigned j = 0; j < mutated.size(); ++j)
-            mutations[i*2+j] = *(mutated.data()+j);
+        mutations.block(i, 0, 1, 2) = rw.Mutate(initial).transpose();
     }
-    alglib::real_2d_array vals;
-    alglib::real_2d_array dataCov;
-    vals.setcontent(ITER, cov.rows(), &(mutations[0]));
-    alglib::covm2(vals, vals, dataCov);
+    const auto dataCov = Common::CalculateCovariance(mutations, mutations);
+    
     EXPECT_EQ(dataCov.rows(), cov.rows());
     EXPECT_EQ(dataCov.cols(), cov.cols());
 
@@ -50,7 +46,7 @@ TEST(RandomWalkTest, CheckProbability)
 {
     const Eigen::Matrix2d cov {{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
-    RandomWalk<2> rw{cov};
+    auto rw {CreateRandomWalk(cov)};
     
     const Eigen::Vector2d m1 {4, 6};
     auto prob = rw.Probability(m1, m1);
