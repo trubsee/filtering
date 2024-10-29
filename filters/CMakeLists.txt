@@ -7,6 +7,7 @@ add_library(filters
 )
 
 add_subdirectory(test)
+add_subdirectory(benchmark)
 
 target_link_libraries(filters 
     alglib

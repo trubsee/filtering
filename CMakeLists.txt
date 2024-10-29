@@ -6,6 +6,11 @@ project (TimeSeries)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 # Project wide CXX flags
 string(CONCAT CXX_IGNORES
     "-Wno-unknown-warning-option "
@@ -28,7 +33,6 @@ string(CONCAT CXX_IGNORES
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 enable_testing()
-set(CMAKE_BUILD_TYPE Debug)
 
 include(FetchContent)
 
@@ -40,6 +44,15 @@ FetchContent_Declare(
   URL https://github.com/google/googletest/archive/release-1.11.0.zip
 )
 FetchContent_MakeAvailable(googletest)
+
+# --- GOOGLE BENCHMARK --- #
+FetchContent_Declare(
+  benchmark
+  GIT_REPOSITORY https://github.com/google/benchmark.git
+  GIT_TAG main
+)
+set(BENCHMARK_ENABLE_TESTING OFF)
+FetchContent_MakeAvailable(benchmark)
 
 # --- Eigen --- #
 FetchContent_Declare(
