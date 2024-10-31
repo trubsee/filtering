@@ -40,7 +40,7 @@ private:
     const unsigned mObserved;
 
     // estimate samples 
-    Eigen::MatrixXd mSamples;
+    std::vector<Eigen::VectorXd> mSamples;
     std::optional<Eigen::VectorXd> mPrediction;
     Eigen::VectorXd mEstimate;
     // innovation 
