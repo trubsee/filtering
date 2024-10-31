@@ -39,7 +39,7 @@ static void BenchmarkStochasticEKF(benchmark::State& state)
         }
     }
 }
-BENCHMARK(BenchmarkStochasticEKF)->Arg(10);
+BENCHMARK(BenchmarkStochasticEKF);
 
 }
 

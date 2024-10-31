@@ -28,6 +28,8 @@ public:
 private:
     void InitialiseSamples(const Eigen::VectorXd&, const Eigen::MatrixXd&);
 
+    void UpdateSamples(const Eigen::VectorXd&, const Eigen::MatrixXd&);
+
     // model params
     const StochasticModels::LinearGaussian& mStateModel;
     Eigen::MatrixXd H;

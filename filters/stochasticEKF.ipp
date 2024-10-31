@@ -42,14 +42,8 @@ void StochasticEKF<numSamples>::Update(const Eigen::VectorXd& obs)
     S = H * PPred * H.transpose() + R;
     const auto K = PPred * H.transpose() * S.inverse();
     mEstimate = xPred + K * y;
-    
-    const Eigen::MatrixXd tril = R.llt().matrixL();
-    for (unsigned i = 0; i < numSamples; ++i)
-    {
-        const auto x_i = mSamples.col(i);
-        const auto v = Common::SampleMvNormal(tril);
-        mSamples.block(0, i, mHidden, 1) = x_i + K * (obs + v - H * x_i);
-    }
+   
+    UpdateSamples(obs, K);
     mPrediction = std::nullopt;
 }
 
@@ -79,6 +73,19 @@ void StochasticEKF<numSamples>::InitialiseSamples(
     for (unsigned i = 0; i < numSamples; ++i)
     {
         mSamples.block(0, i, mHidden, 1) = stateEstimate + Common::SampleMvNormal(tril);
+    }
+}
+
+
+template <int numSamples>
+void StochasticEKF<numSamples>::UpdateSamples(const Eigen::VectorXd& obs, const Eigen::MatrixXd& K)
+{
+    const Eigen::MatrixXd tril = R.llt().matrixL();
+    for (unsigned i = 0; i < numSamples; ++i)
+    {
+        const auto x_i = mSamples.col(i);
+        const auto v = Common::SampleMvNormal(tril);
+        mSamples.block(0, i, mHidden, 1) = x_i + K * (obs + v - H * x_i);
     }
 }
 

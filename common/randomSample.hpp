@@ -11,8 +11,8 @@ namespace Common {
 
 namespace {
 
-    std::random_device mRandomDevice;
-    std::mt19937 mGen{ mRandomDevice() };
+    // std::random_device mRandomDevice;
+    std::mt19937 mGen{ 123 };
     std::normal_distribution<double> mNorm{0, 1};
 }
 
