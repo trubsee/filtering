@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
-#include "common/timer/dummyClock.hpp"
-#include "common/timer/singleThreadedTimerManager.hpp"
+#include "timer/dummyClock.hpp"
+#include "timer/singleThreadedTimerManager.hpp"
 
-namespace Common::Timer::Test {
+namespace Timer::Test {
 
 
 TEST(SingleThreadedTimerManagerTest, Update)

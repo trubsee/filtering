@@ -3,7 +3,7 @@ message("CMAKE VERSION: " "${CMAKE_VERSIONS}")
 
 project (TimeSeries)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -38,6 +38,8 @@ include(FetchContent)
 
 find_package(ALGLIB REQUIRED)
 
+find_package(Boost REQUIRED)
+
 # --- GOOGLETEST --- #
 FetchContent_Declare(
   googletest
@@ -56,21 +58,31 @@ FetchContent_MakeAvailable(benchmark)
 
 # --- Eigen --- #
 FetchContent_Declare(
-    Eigen
+    eigen
     GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
     GIT_TAG 3.4
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )
-FetchContent_MakeAvailable(Eigen)
+FetchContent_MakeAvailable(eigen)
+
+# --- libfixmath --- #
+FetchContent_Declare(
+    libfixmath
+    GIT_REPOSITORY https://github.com/PetteriAimonen/libfixmath.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(libfixmath)
 
 # --- project directories --- # 
 include_directories(".")
 
 list(APPEND SOURCE_DIRECTORIES
     "common"
+    "fakeMarket"
     "filters"
     "stochasticModels"
+    "timer"
 )
 foreach (DIR IN LISTS SOURCE_DIRECTORIES)
     add_subdirectory(${DIR})

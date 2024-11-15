@@ -2,7 +2,7 @@
 #include <chrono>
 #include <functional>
 
-namespace Common::Timer {
+namespace Timer {
 
 class Timer
 {

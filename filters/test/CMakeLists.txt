@@ -10,7 +10,7 @@ add_executable(filtersTest
 
 target_link_libraries(filtersTest
     alglib
-    filters
+    filtersLib
     gtest_main
 )
 

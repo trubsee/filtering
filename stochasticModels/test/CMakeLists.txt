@@ -8,7 +8,7 @@ add_executable(stochasticModelsTest
 
 target_link_libraries(stochasticModelsTest
     alglib
-    stochasticModels
+    stochasticModelsLib
     gtest_main
 )
 

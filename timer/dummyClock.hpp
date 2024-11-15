@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common/timer/timer.hpp"
+#include "timer/timer.hpp"
 
-namespace Common::Timer {
+namespace Timer {
 
 class DummyClock
 {

@@ -10,5 +10,5 @@ FetchContent_MakeAvailable(benchmark)
 
 target_link_libraries(stochasticEKFBenchmark
     benchmark::benchmark
-    filters
+    filtersLib
 )

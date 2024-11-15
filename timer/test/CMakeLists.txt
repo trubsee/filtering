@@ -8,7 +8,7 @@ add_executable(timerTest
 )
 
 target_link_libraries(timerTest
-    timer
+    timerLib
     gtest_main
 )
 

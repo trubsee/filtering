@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "common/timer/timer.hpp"
+#include "timer/timer.hpp"
 
-namespace Common::Timer::Test {
+namespace Timer::Test {
 
 TEST(TimerTest, TestFire)
 {
