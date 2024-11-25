@@ -1,18 +1,16 @@
 #include <algorithm>
-#include <functional>
 #include <cmath>
+#include <functional>
+#include <numeric>
 
-#include "common/assert.hpp"
 #include "fakeMarket/orderBook.hpp"
 
 namespace FakeMarket {
 
-bool OrderBook::QuoteDelete(const SubmitQuoteDelete& quoteDelete)
+bool OrderBook::QuoteDelete(const SubmitQuoteDelete& qd)
 {
     const auto id = Common::MakeHashId(
-            quoteDelete.clientId, 
-            quoteDelete.productId, 
-            quoteDelete.quoteId
+        qd.clientId, qd.productId, qd.quoteId
     );
 
     const auto it = mQuotes.find(id);
@@ -20,7 +18,7 @@ bool OrderBook::QuoteDelete(const SubmitQuoteDelete& quoteDelete)
         return false;
 
     const auto [side, price, volume] = it->second;
-    QuoteVec& quotes = side == Side::BUY ? mBidQuotes[price] : mAskQuotes[price];
+    auto& quotes = GetPriceLevel(side, price);
     const auto quoteIt = std::find_if(
         quotes.begin(), 
         quotes.end(), 
@@ -29,6 +27,58 @@ bool OrderBook::QuoteDelete(const SubmitQuoteDelete& quoteDelete)
     ASSERT(quoteIt != quotes.end());
     quotes.erase(quoteIt);
     mQuotes.erase(it);
+    return true;
+}
+
+bool OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu)
+{
+    if (std::fmod(qu.price, mTickSize) != 0)
+        return false;
+    
+    const auto id = Common::MakeHashId(
+        qu.clientId, qu.productId, qu.quoteId
+    );
+    const auto it = mQuotes.find(id);
+    if (it != mQuotes.end() && std::get<Side>(it->second) != qu.side)
+        return false;
+
+    Volume endVolume = qu.volume;
+    if (qu.side == Side::BUY && qu.price > mAskQuotes.begin()->first)
+        endVolume = CrossBook(qu.price, qu.volume, mAskQuotes);
+    else if (qu.side == Side::SELL && qu.price < mBidQuotes.begin()->first)
+        endVolume = CrossBook(qu.price, qu.volume, mBidQuotes);
+
+    if (endVolume == 0)
+    {
+        if (it != mQuotes.end())
+            mQuotes.erase(it);
+        return true;
+    }
+    
+    if (it != mQuotes.end())
+    {
+        auto& [_, oldPrice, oldVolume] = it->second; 
+        oldVolume = endVolume;
+        oldPrice = qu.price;
+
+        auto& oldLevel = GetPriceLevel(qu.side, qu.price);
+        auto qIt = std::find_if(
+            oldLevel.begin(), 
+            oldLevel.end(), 
+            [&id](const auto& qi){ return id == qi.second; }
+        );
+        ASSERT (qIt != oldLevel.end());
+        // Policy is to lose queue prio
+        oldLevel.erase(qIt);
+    }
+    else
+    {
+        mQuotes.emplace(
+            id, SingleQuoteDetails{qu.side, qu.price, qu.volume}
+        );
+    }
+    auto& newLevel = GetPriceLevel(qu.side, qu.price);
+    newLevel.emplace_back(QuoteInfo{endVolume, id});
     return true;
 }
 
@@ -50,6 +100,25 @@ bool OrderBook::FAK(const SubmitFAK& fak)
         CrossBook(fak.price, fak.volume, mBidQuotes);
     }
     return true;
+}
+
+TOB OrderBook::GetTopOfBook() const
+{
+    const auto [bidPrice, bidVolumes] = *mBidQuotes.begin();
+    const auto bidVolume = std::accumulate(
+       bidVolumes.begin(),
+       bidVolumes.end(),
+       Volume{0},
+       [](Volume volume, const auto& quote) { return quote.first + volume; }
+    );
+    const auto [askPrice, askVolumes] = *mAskQuotes.begin();
+    const auto askVolume = std::accumulate(
+       askVolumes.begin(),
+       askVolumes.end(),
+       Volume{0},
+       [](Volume volume, const auto& quote) { return quote.first + volume; }
+    );
+    return TOB{ bidPrice, bidVolume, askPrice, askVolume };
 }
 
 template<typename Compare>

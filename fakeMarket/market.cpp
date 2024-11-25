@@ -45,11 +45,14 @@ void Market::ProcessOrder(const MarketOrder& order)
     if (it == mOrderBooks.end())
         return;
 
-    if (const auto quoteDelete = std::get_if<SubmitQuoteDelete>(&order))
-        it->second.QuoteDelete(*quoteDelete);
+    if (const auto qd = std::get_if<SubmitQuoteDelete>(&order))
+        it->second.QuoteDelete(*qd);
 
     if (const auto fak = std::get_if<SubmitFAK>(&order))
         it->second.FAK(*fak);
+
+    if (const auto qu = std::get_if<SubmitQuoteUpdate>(&order))
+        it->second.QuoteUpdate(*qu);
 }
 
 }
