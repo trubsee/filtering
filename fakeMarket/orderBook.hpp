@@ -10,8 +10,13 @@
 
 namespace FakeMarket {
 
+namespace Test { 
+    class OrderBookTestFixture;
+}
+
 class OrderBook
 {
+public:
     using SingleQuoteDetails = std::tuple<Side, Price, Volume>;
     using QuoteInfo = std::pair<Volume, Common::HashId>;
     using QuoteVec = std::vector<QuoteInfo>;
@@ -50,6 +55,8 @@ private:
     std::unordered_map<Common::HashId, SingleQuoteDetails> mQuotes;
     std::map<Price, QuoteVec, std::greater<Price>> mBidQuotes;
     std::map<Price, QuoteVec> mAskQuotes;
+
+    friend class Test::OrderBookTestFixture;
 };
 
 }

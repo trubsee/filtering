@@ -9,4 +9,5 @@ add_subdirectory(test)
 target_link_libraries(fakeMarketLib
     Boost::boost
     commonLib
+    gtest_main
 )

@@ -4,6 +4,7 @@ include (GoogleTest)
 
 add_executable(fakeMarketTest
     marketTest.cpp
+    orderBookTest.cpp
 )
 
 target_link_libraries(fakeMarketTest
