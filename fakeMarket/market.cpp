@@ -7,7 +7,7 @@ Market::Market(unsigned lifetime, double tickSize)
     mLifetime{lifetime},
     mLastClientId{0}
 {
-    mOrderBooks.emplace(1, OrderBook{0.1});
+    mOrderBooks.emplace(1, OrderBook{mEventDispatcher, 0.1});
 }
 
 ClientId Market::AddClient()

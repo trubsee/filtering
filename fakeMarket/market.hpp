@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <variant>
 
+#include "common/eventDispatcher.hpp"
 #include "common/types.hpp"
 #include "fakeMarket/events.hpp"
 #include "fakeMarket/orderBook.hpp"
@@ -36,6 +37,8 @@ private:
     void AddToOrders(const MarketOrder&);
 
     void ProcessOrder(const MarketOrder&);
+
+    Common::EventDispatcher mEventDispatcher;
 
     const unsigned mLifetime;
     ClientId mLastClientId;

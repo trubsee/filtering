@@ -1,4 +1,7 @@
 #pragma once
+#include <cstdint>
+#include <ostream>
+
 #include "boost/serialization/strong_typedef.hpp"
 
 enum class Side : std::int8_t
@@ -23,4 +26,12 @@ struct TOB
     Volume bidVolume;
     Price askPrice;
     Volume askVolume;
+
+    bool operator==(const TOB& other) const
+    {
+        return bidPrice == other.bidPrice && bidVolume == other.bidVolume &&
+            askPrice == other.askPrice && askVolume == other.askVolume;
+    }
 };
+
+std::ostream& operator<<(std::ostream& os, const TOB& tob);

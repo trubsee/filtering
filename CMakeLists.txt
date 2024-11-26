@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.5)
 message("CMAKE VERSION: " "${CMAKE_VERSIONS}")
 
 project (TimeSeries)

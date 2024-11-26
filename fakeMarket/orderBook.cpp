@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cmath>
 #include <functional>
 #include <numeric>
 
@@ -32,7 +31,7 @@ bool OrderBook::QuoteDelete(const SubmitQuoteDelete& qd)
 
 bool OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu)
 {
-    if (std::fmod(qu.price, mTickSize) != 0)
+    if (!CheckValidPrice(qu.price))
         return false;
     
     const auto id = Common::MakeHashId(
@@ -48,7 +47,7 @@ bool OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu)
     else if (qu.side == Side::SELL && qu.price < mBidQuotes.begin()->first)
         endVolume = CrossBook(qu.price, qu.volume, mBidQuotes);
 
-    if (endVolume == 0)
+    if (endVolume == Volume{0})
     {
         if (it != mQuotes.end())
             mQuotes.erase(it);
@@ -84,7 +83,7 @@ bool OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu)
 
 bool OrderBook::FAK(const SubmitFAK& fak)
 {
-    if (std::fmod(fak.price, mTickSize) != 0)
+    if (!CheckValidPrice(fak.price))
         return false;
 
     if (fak.side == Side::BUY)
@@ -95,7 +94,7 @@ bool OrderBook::FAK(const SubmitFAK& fak)
     }
     else
     {
-        if (fak.price < mBidQuotes.begin()->first)
+        if (fak.price > mBidQuotes.begin()->first)
             return true;
         CrossBook(fak.price, fak.volume, mBidQuotes);
     }
@@ -121,11 +120,42 @@ TOB OrderBook::GetTopOfBook() const
     return TOB{ bidPrice, bidVolume, askPrice, askVolume };
 }
 
+void OrderBook::SetBook(BidQuotesMap bidQuotes, AskQuotesMap askQuotes)
+{
+    ASSERT(mQuotes.empty());
+    mBidQuotes = bidQuotes;
+    for (const auto& priceLevel: bidQuotes)
+    {
+        const auto price = priceLevel.first;
+        for (const auto& quote: priceLevel.second)
+        {
+            auto inserted = mQuotes.emplace(
+                quote.second, 
+                SingleQuoteDetails{Side::BUY, price, quote.first}
+            );
+            ASSERT(inserted.second);
+        }
+    }
+    mAskQuotes = askQuotes;
+    for (const auto& priceLevel: askQuotes)
+    {
+        const auto price = priceLevel.first;
+        for (const auto& quote: priceLevel.second)
+        {
+            auto inserted = mQuotes.emplace(
+                quote.second, 
+                SingleQuoteDetails{Side::SELL, price, quote.first}
+            );
+            ASSERT(inserted.second);
+        }
+    }
+}
+
 template<typename Compare>
 Volume OrderBook::CrossBook(
     Price price, 
     Volume volume, 
-    std::map<Price, QuoteVec, Compare>& allQuotes) 
+    std::map<Price, QuoteVec, Compare>& priceLevels) 
 {
     const auto fillVolume = [&volume](auto& quote){
         if (volume < quote.first)
@@ -136,15 +166,16 @@ Volume OrderBook::CrossBook(
         volume -= quote.first;
         return false;
     };
+
     const auto cleanUp = [this](const auto& quote) {
         auto numErased = mQuotes.erase(quote.second);
         ASSERT(numErased == 1);
     };
 
-    while (!allQuotes.empty() && 
-        Compare()(allQuotes.begin()->first, price))
+    while (!priceLevels.empty() && 
+        !Compare()(price, priceLevels.begin()->first))
     {
-        auto quotes = allQuotes.begin()->second;
+        auto& quotes = priceLevels.begin()->second;
         auto it = std::find_if(quotes.begin(), quotes.end(), fillVolume);
         
         // Delete our records in unordered_map
@@ -152,10 +183,14 @@ Volume OrderBook::CrossBook(
         if (it != quotes.end())
         {
             quotes.erase(quotes.begin(), it);
+            const auto infoIt = mQuotes.find(it->second);
+            ASSERT(infoIt != mQuotes.end());
+            std::get<Volume>(infoIt->second) -= volume;
             return Volume{0};
         }
+        
         // Delete price volume entirely
-        quotes.erase(quotes.begin());
+        priceLevels.erase(priceLevels.begin());
     }
     return volume;
 }

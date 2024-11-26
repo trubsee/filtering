@@ -3,7 +3,7 @@ add_library(commonLib
     constants.hpp
     randomSample.hpp
     statistics.hpp
-    types.hpp
+    types.hpp types.cpp
     utils.hpp
 )
 
