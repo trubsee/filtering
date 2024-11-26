@@ -18,54 +18,55 @@ class OrderBookTestFixture;
 }
 
 class OrderBook {
- public:
-  using SingleQuoteDetails = std::tuple<Side, Price, Volume>;
-  using QuoteInfo = std::pair<Volume, Common::HashId>;
-  using QuoteVec = std::vector<QuoteInfo>;
-  using BidQuotesMap = std::map<Price, QuoteVec, std::greater<Price>>;
-  using AskQuotesMap = std::map<Price, QuoteVec>;
+   public:
+    using SingleQuoteDetails = std::tuple<Side, Price, Volume>;
+    using QuoteInfo = std::pair<Volume, Common::HashId>;
+    using QuoteVec = std::vector<QuoteInfo>;
+    using BidQuotesMap = std::map<Price, QuoteVec, std::greater<Price>>;
+    using AskQuotesMap = std::map<Price, QuoteVec>;
 
-  OrderBook(ClientUpdater& clientUpdater, double tickSize)
-      : mClientUpdater{clientUpdater}, mTickSize{tickSize} {}
+    OrderBook(ClientUpdater& clientUpdater, double tickSize)
+        : mClientUpdater{clientUpdater}, mTickSize{tickSize} {}
 
-  bool QuoteDelete(const SubmitQuoteDelete&);
+    bool QuoteDelete(const SubmitQuoteDelete&);
 
-  bool QuoteUpdate(const SubmitQuoteUpdate&);
+    bool QuoteUpdate(const SubmitQuoteUpdate&);
 
-  bool FAK(const SubmitFAK&);
+    bool FAK(const SubmitFAK&);
 
-  TOB GetTopOfBook() const;
+    TOB GetTopOfBook() const;
 
-  void SetBook(BidQuotesMap, AskQuotesMap);
+    void SetBook(BidQuotesMap, AskQuotesMap);
 
- private:
-  template <typename Compare>
-  Volume CrossBook(Price, Volume, std::map<Price, QuoteVec, Compare>&);
+   private:
+    template <typename Compare>
+    Volume CrossBook(Price, Volume, std::map<Price, QuoteVec, Compare>&);
 
-  bool CheckValidPrice(Price price) {
-    return std::abs(price - std::round(price / mTickSize) * mTickSize) < 1e-9;
-  }
-
-  QuoteVec& GetPriceLevel(Side side, Price price) {
-    if (side == Side::BUY) {
-      auto it = mBidQuotes.find(price);
-      ASSERT(it != mBidQuotes.end());
-      return it->second;
-    } else {
-      auto it = mAskQuotes.find(price);
-      ASSERT(it != mAskQuotes.end());
-      return it->second;
+    bool CheckValidPrice(Price price) {
+        return std::abs(price - std::round(price / mTickSize) * mTickSize) <
+               1e-9;
     }
-  }
 
-  ClientUpdater& mClientUpdater;
-  double mTickSize;
+    QuoteVec& GetPriceLevel(Side side, Price price) {
+        if (side == Side::BUY) {
+            auto it = mBidQuotes.find(price);
+            ASSERT(it != mBidQuotes.end());
+            return it->second;
+        } else {
+            auto it = mAskQuotes.find(price);
+            ASSERT(it != mAskQuotes.end());
+            return it->second;
+        }
+    }
 
-  std::unordered_map<Common::HashId, SingleQuoteDetails> mQuotes;
-  BidQuotesMap mBidQuotes;
-  AskQuotesMap mAskQuotes;
+    ClientUpdater& mClientUpdater;
+    double mTickSize;
 
-  friend class Test::OrderBookTestFixture;
+    std::unordered_map<Common::HashId, SingleQuoteDetails> mQuotes;
+    BidQuotesMap mBidQuotes;
+    AskQuotesMap mAskQuotes;
+
+    friend class Test::OrderBookTestFixture;
 };
 
 }  // namespace FakeMarket

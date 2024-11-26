@@ -5,11 +5,12 @@
 namespace FakeMarket {
 
 TEST(MaketTest, RegisterOrders) {
-  Market market(15, 0.1);
+    Market market(15, 0.1);
 
-  SubmitFAK fak{ClientId{0}, ProductId{0}, Side::BUY, Price{100.}, Volume{10}};
-  market.RegisterFAK(fak);
-  market.Run();
+    SubmitFAK fak{ClientId{0}, ProductId{0}, Side::BUY, Price{100.},
+                  Volume{10}};
+    market.RegisterFAK(fak);
+    market.Run();
 }
 
 }  // namespace FakeMarket

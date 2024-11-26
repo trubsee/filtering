@@ -18,26 +18,26 @@ KalmanFilter::KalmanFilter(const Eigen::VectorXd& stateEstimate,
       P{covEstimate},
       y{mObserved},
       S{mObserved, mObserved} {
-  ASSERT(stateEstimate.size() == mHidden);
-  ASSERT(covEstimate.rows() == covEstimate.cols());
-  ASSERT(covEstimate.rows() == mHidden);
-  ASSERT(stateModel.GetNumOutputs() == stateModel.GetNumInputs());
-  ASSERT(stateModel.GetNumOutputs() == mHidden);
+    ASSERT(stateEstimate.size() == mHidden);
+    ASSERT(covEstimate.rows() == covEstimate.cols());
+    ASSERT(covEstimate.rows() == mHidden);
+    ASSERT(stateModel.GetNumOutputs() == stateModel.GetNumInputs());
+    ASSERT(stateModel.GetNumOutputs() == mHidden);
 }
 
 void KalmanFilter::Update(const Eigen::VectorXd& obs) {
-  ASSERT(obs.size() == mObserved);
+    ASSERT(obs.size() == mObserved);
 
-  // Predict
-  const auto xPred = Predict();
-  const auto PPred = F.transpose() * P * F + Q;
+    // Predict
+    const auto xPred = Predict();
+    const auto PPred = F.transpose() * P * F + Q;
 
-  // Update
-  y = obs - H * xPred;
-  S = H * PPred * H.transpose() + R;
-  const auto K = PPred * H.transpose() * S.inverse();
-  x = xPred + K * y;
-  P = (Eigen::MatrixXd::Identity(mHidden, mHidden) - K * H) * P;
+    // Update
+    y = obs - H * xPred;
+    S = H * PPred * H.transpose() + R;
+    const auto K = PPred * H.transpose() * S.inverse();
+    x = xPred + K * y;
+    P = (Eigen::MatrixXd::Identity(mHidden, mHidden) - K * H) * P;
 }
 
 }  // namespace Filters

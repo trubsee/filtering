@@ -17,15 +17,15 @@ BOOST_STRONG_TYPEDEF(std::uint32_t, Volume);
 BOOST_STRONG_TYPEDEF(std::uint32_t, QuoteId);
 
 struct TOB {
-  Price bidPrice;
-  Volume bidVolume;
-  Price askPrice;
-  Volume askVolume;
+    Price bidPrice;
+    Volume bidVolume;
+    Price askPrice;
+    Volume askVolume;
 
-  bool operator==(const TOB& other) const {
-    return bidPrice == other.bidPrice && bidVolume == other.bidVolume &&
-           askPrice == other.askPrice && askVolume == other.askVolume;
-  }
+    bool operator==(const TOB& other) const {
+        return bidPrice == other.bidPrice && bidVolume == other.bidVolume &&
+               askPrice == other.askPrice && askVolume == other.askVolume;
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const TOB& tob);

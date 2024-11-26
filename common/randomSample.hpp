@@ -25,22 +25,22 @@ std::normal_distribution<double> norm{0, 1};
 static double SampleNormal() { return norm(gen); }
 
 static Eigen::VectorXd SampleMvNormal(const Eigen::MatrixXd& tril) {
-  ASSERT(tril.rows() == tril.cols());
-  Eigen::VectorXd randomVariables(tril.rows());
-  for (unsigned i = 0; i < tril.rows(); ++i)
-    randomVariables(i) = SampleNormal();
-  return tril * randomVariables;
+    ASSERT(tril.rows() == tril.cols());
+    Eigen::VectorXd randomVariables(tril.rows());
+    for (unsigned i = 0; i < tril.rows(); ++i)
+        randomVariables(i) = SampleNormal();
+    return tril * randomVariables;
 }
 
 class DiscreteDistribution {
- public:
-  DiscreteDistribution(const std::vector<double>& weights)
-      : mDistribution{weights.begin(), weights.end()} {}
+   public:
+    DiscreteDistribution(const std::vector<double>& weights)
+        : mDistribution{weights.begin(), weights.end()} {}
 
-  int Sample() { return mDistribution(gen); }
+    int Sample() { return mDistribution(gen); }
 
- private:
-  std::discrete_distribution<int> mDistribution;
+   private:
+    std::discrete_distribution<int> mDistribution;
 };
 
 }  // namespace Common

@@ -15,42 +15,42 @@
 namespace FakeMarket {
 
 class Market {
-  using MarketOrder =
-      std::variant<SubmitFAK, SubmitQuoteUpdate, SubmitQuoteDelete>;
+    using MarketOrder =
+        std::variant<SubmitFAK, SubmitQuoteUpdate, SubmitQuoteDelete>;
 
- public:
-  Market(unsigned lifetime, double tickSize);
+   public:
+    Market(unsigned lifetime, double tickSize);
 
-  void Run();
+    void Run();
 
-  Client AddClient();
+    Client AddClient();
 
-  void RegisterFAK(const SubmitFAK& fak) { AddToOrders(fak); }
+    void RegisterFAK(const SubmitFAK& fak) { AddToOrders(fak); }
 
-  void RegisterQuoteUpdate(const SubmitQuoteUpdate& quoteUpdate) {
-    AddToOrders(quoteUpdate);
-  }
+    void RegisterQuoteUpdate(const SubmitQuoteUpdate& quoteUpdate) {
+        AddToOrders(quoteUpdate);
+    }
 
-  void RegisterQuoteDelete(const SubmitQuoteDelete& quoteDelete) {
-    AddToOrders(quoteDelete);
-  }
+    void RegisterQuoteDelete(const SubmitQuoteDelete& quoteDelete) {
+        AddToOrders(quoteDelete);
+    }
 
- private:
-  void AddToOrders(const MarketOrder&);
+   private:
+    void AddToOrders(const MarketOrder&);
 
-  void ProcessOrder(const MarketOrder&);
+    void ProcessOrder(const MarketOrder&);
 
-  Common::EventDispatcher mEventDispatcher;
-  ClientUpdater mClientUpdater;
+    Common::EventDispatcher mEventDispatcher;
+    ClientUpdater mClientUpdater;
 
-  const unsigned mLifetime;
+    const unsigned mLifetime;
 
-  // consider using tbb_concurrent_queue
-  std::mutex mOrderMutex;
-  std::condition_variable mOrderCV;
-  std::queue<MarketOrder> mOrders;
+    // consider using tbb_concurrent_queue
+    std::mutex mOrderMutex;
+    std::condition_variable mOrderCV;
+    std::queue<MarketOrder> mOrders;
 
-  std::unordered_map<std::uint8_t, OrderBook> mOrderBooks;
+    std::unordered_map<std::uint8_t, OrderBook> mOrderBooks;
 };
 
 }  // namespace FakeMarket

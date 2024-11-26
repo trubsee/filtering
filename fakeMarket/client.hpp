@@ -7,22 +7,22 @@
 namespace FakeMarket {
 
 class Client : public IClient {
- public:
-  Client() : mClientId{nextClientId} { ++nextClientId; }
+   public:
+    Client() : mClientId{nextClientId} { ++nextClientId; }
 
-  ClientId GetClientId() const override { return mClientId; }
+    ClientId GetClientId() const override { return mClientId; }
 
-  void FAKResponse(const ResponseFAK&) override {}
+    void FAKResponse(const ResponseFAK&) override {}
 
-  void QuoteUpdateResponse(const ResponseQuoteUpdate&) override {}
+    void QuoteUpdateResponse(const ResponseQuoteUpdate&) override {}
 
-  void QuoteDeleteResponse(const ResponseQuoteDelete&) override {}
+    void QuoteDeleteResponse(const ResponseQuoteDelete&) override {}
 
-  void QuoteFillPrivate(const PrivateQuoteFill&) override {}
+    void QuoteFillPrivate(const PrivateQuoteFill&) override {}
 
- private:
-  static ClientId nextClientId;
-  ClientId mClientId;
+   private:
+    static ClientId nextClientId;
+    ClientId mClientId;
 };
 
 }  // namespace FakeMarket

@@ -7,39 +7,39 @@
 namespace Filters {
 
 class KalmanFilter {
- public:
-  KalmanFilter(const Eigen::VectorXd&, const Eigen::MatrixXd&,
-               const StochasticModels::LinearGaussian&,
-               const StochasticModels::LinearGaussian&);
+   public:
+    KalmanFilter(const Eigen::VectorXd&, const Eigen::MatrixXd&,
+                 const StochasticModels::LinearGaussian&,
+                 const StochasticModels::LinearGaussian&);
 
-  void Update(const Eigen::VectorXd&);
+    void Update(const Eigen::VectorXd&);
 
-  const Eigen::VectorXd& Estimate() const { return x; }
+    const Eigen::VectorXd& Estimate() const { return x; }
 
-  Eigen::VectorXd Predict() const { return F * x; }
+    Eigen::VectorXd Predict() const { return F * x; }
 
-  std::pair<const Eigen::VectorXd&, const Eigen::MatrixXd&> GetLastInnovation()
-      const {
-    return {y, S};
-  }
+    std::pair<const Eigen::VectorXd&, const Eigen::MatrixXd&>
+    GetLastInnovation() const {
+        return {y, S};
+    }
 
- private:
-  // model params
-  Eigen::MatrixXd F;
-  Eigen::MatrixXd H;
-  Eigen::MatrixXd Q;
-  Eigen::MatrixXd R;
+   private:
+    // model params
+    Eigen::MatrixXd F;
+    Eigen::MatrixXd H;
+    Eigen::MatrixXd Q;
+    Eigen::MatrixXd R;
 
-  // dimensions
-  const unsigned mHidden;
-  const unsigned mObserved;
+    // dimensions
+    const unsigned mHidden;
+    const unsigned mObserved;
 
-  // current estimate
-  Eigen::VectorXd x;
-  Eigen::MatrixXd P;
-  // innovations
-  Eigen::VectorXd y;
-  Eigen::MatrixXd S;
+    // current estimate
+    Eigen::VectorXd x;
+    Eigen::MatrixXd P;
+    // innovations
+    Eigen::VectorXd y;
+    Eigen::MatrixXd S;
 };
 
 }  // namespace Filters
