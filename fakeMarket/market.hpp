@@ -7,6 +7,8 @@
 
 #include "common/eventDispatcher.hpp"
 #include "common/types.hpp"
+#include "fakeMarket/client.hpp"
+#include "fakeMarket/clientUpdater.hpp"
 #include "fakeMarket/events.hpp"
 #include "fakeMarket/orderBook.hpp"
 
@@ -25,7 +27,7 @@ public:
 
     void Run();
 
-    ClientId AddClient(); 
+    Client AddClient(); 
 
     void RegisterFAK(const SubmitFAK& fak) { AddToOrders(fak); }
     
@@ -39,9 +41,9 @@ private:
     void ProcessOrder(const MarketOrder&);
 
     Common::EventDispatcher mEventDispatcher;
+    ClientUpdater mClientUpdater;
 
     const unsigned mLifetime;
-    ClientId mLastClientId;
     
     // consider using tbb_concurrent_queue
     std::mutex mOrderMutex;

@@ -4,16 +4,17 @@ namespace FakeMarket {
 
 Market::Market(unsigned lifetime, double tickSize)
 :
-    mLifetime{lifetime},
-    mLastClientId{0}
+    mClientUpdater{mEventDispatcher},
+    mLifetime{lifetime}
 {
-    mOrderBooks.emplace(1, OrderBook{mEventDispatcher, 0.1});
+    mOrderBooks.emplace(1, OrderBook{mClientUpdater, 0.1});
 }
 
-ClientId Market::AddClient()
+Client Market::AddClient()
 {
-    ++mLastClientId;
-    return mLastClientId;
+    Client client;
+    mClientUpdater.ConnectClient(client);
+    return client;
 }
 
 void Market::Run()

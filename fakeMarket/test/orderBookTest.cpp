@@ -4,6 +4,7 @@
 
 #include "common/utils.hpp"
 #include "common/eventDispatcher.hpp"
+#include "fakeMarket/clientUpdater.hpp"
 #include "fakeMarket/events.hpp"
 #include "fakeMarket/orderBook.hpp"
 
@@ -72,7 +73,8 @@ public:
     }
 
     Common::EventDispatcher ed;
-    OrderBook ob{ed, 0.05};
+    ClientUpdater cu{ed};
+    OrderBook ob{cu, 0.05};
     ProductId pId{1};
     ClientId client1{1};
     ClientId client2{2};

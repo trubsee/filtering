@@ -29,4 +29,20 @@ struct SubmitQuoteDelete
     QuoteId quoteId;
 };
 
+struct ResponseFAK
+{
+};
+
+struct ResponseQuoteUpdate
+{
+};
+
+struct ResponseQuoteDelete
+{
+};
+
+struct PrivateQuoteFill
+{
+};
+
 }

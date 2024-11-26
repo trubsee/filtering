@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "common/assert.hpp"
-#include "common/eventDispatcher.hpp"
 #include "common/types.hpp"
 #include "common/utils.hpp"
+#include "fakeMarket/clientUpdater.hpp"
 #include "fakeMarket/events.hpp"
 
 #include <iostream>
@@ -27,9 +27,9 @@ public:
     using BidQuotesMap = std::map<Price, QuoteVec, std::greater<Price>>;
     using AskQuotesMap = std::map<Price, QuoteVec>;
     
-    OrderBook(Common::EventDispatcher& eventDispatcher, double tickSize) 
+    OrderBook(ClientUpdater& clientUpdater, double tickSize) 
     : 
-        mEventDispatcher{ eventDispatcher },
+        mClientUpdater{ clientUpdater },
         mTickSize{ tickSize }
     {
     }
@@ -69,7 +69,7 @@ private:
         }
     }
 
-    Common::EventDispatcher& mEventDispatcher;
+    ClientUpdater& mClientUpdater;
     double mTickSize;
 
     std::unordered_map<Common::HashId, SingleQuoteDetails> mQuotes;
