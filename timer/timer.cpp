@@ -2,6 +2,6 @@
 
 namespace Timer {
 
-unsigned Timer::nextId {0};
+unsigned Timer::nextId{0};
 
 }

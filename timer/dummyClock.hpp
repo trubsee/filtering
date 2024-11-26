@@ -4,16 +4,16 @@
 
 namespace Timer {
 
-class DummyClock
-{
-public:
-    static void time(Timer::ClockTime now) { mTime = now; }
+class DummyClock {
+ public:
+  static void time(Timer::ClockTime now) { mTime = now; }
 
-    static void tick(Timer::ClockTime::duration elapsed) { mTime += elapsed; }
+  static void tick(Timer::ClockTime::duration elapsed) { mTime += elapsed; }
 
-    static const Timer::ClockTime& now() { return mTime; }
-private:
-    static Timer::ClockTime mTime;
+  static const Timer::ClockTime& now() { return mTime; }
+
+ private:
+  static Timer::ClockTime mTime;
 };
 
-}
+}  // namespace Timer

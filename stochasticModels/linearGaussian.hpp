@@ -5,31 +5,30 @@
 
 namespace StochasticModels {
 
-class LinearGaussian
-{
-public:
-    LinearGaussian(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
-    
-    Eigen::VectorXd Mutate(const Eigen::VectorXd&) const;
+class LinearGaussian {
+ public:
+  LinearGaussian(const Eigen::MatrixXd&, const Eigen::MatrixXd&);
 
-    double Probability(const Eigen::VectorXd&, const Eigen::VectorXd&) const;
+  Eigen::VectorXd Mutate(const Eigen::VectorXd&) const;
 
-    Eigen::MatrixXd GetCoefMatrix() const { return mCoef; }
+  double Probability(const Eigen::VectorXd&, const Eigen::VectorXd&) const;
 
-    Eigen::MatrixXd GetNoiseMatrix() const { return mTril * mTril.transpose(); }
+  Eigen::MatrixXd GetCoefMatrix() const { return mCoef; }
 
-    unsigned GetNumInputs() const { return mInputs; }
+  Eigen::MatrixXd GetNoiseMatrix() const { return mTril * mTril.transpose(); }
 
-    unsigned GetNumOutputs() const { return mOutputs; }
+  unsigned GetNumInputs() const { return mInputs; }
 
-private:
-    const unsigned mInputs;
-    const unsigned mOutputs;
+  unsigned GetNumOutputs() const { return mOutputs; }
 
-    Eigen::MatrixXd mCoef;
-    Eigen::MatrixXd mTril;
-    Eigen::MatrixXd mInverseNoise;
-    double mMaxProb;
+ private:
+  const unsigned mInputs;
+  const unsigned mOutputs;
+
+  Eigen::MatrixXd mCoef;
+  Eigen::MatrixXd mTril;
+  Eigen::MatrixXd mInverseNoise;
+  double mMaxProb;
 };
 
-}
+}  // namespace StochasticModels
