@@ -2,6 +2,6 @@
 
 namespace FakeMarket {
 
-ClientId Client::nextClientId{0};
+ClientId Client::nextClientId{1};
 
 }

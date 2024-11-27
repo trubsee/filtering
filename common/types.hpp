@@ -16,6 +16,8 @@ BOOST_STRONG_TYPEDEF(std::uint32_t, Volume);
 
 BOOST_STRONG_TYPEDEF(std::uint32_t, QuoteId);
 
+BOOST_STRONG_TYPEDEF(std::uint64_t, MsgNumber);
+
 struct TOB {
     Price bidPrice;
     Volume bidVolume;

@@ -10,13 +10,9 @@ class IClient {
 
     virtual ClientId GetClientId() const = 0;
 
-    virtual void FAKResponse(const ResponseFAK&) = 0;
+    virtual void SendResponse(const Response&) = 0;
 
-    virtual void QuoteUpdateResponse(const ResponseQuoteUpdate&) = 0;
-
-    virtual void QuoteDeleteResponse(const ResponseQuoteDelete&) = 0;
-
-    virtual void QuoteFillPrivate(const PrivateQuoteFill&) = 0;
+    virtual void FillPrivate(const PrivateFill&) = 0;
 };
 
 }  // namespace FakeMarket

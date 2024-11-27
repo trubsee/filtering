@@ -19,20 +19,12 @@ class ClientUpdater {
         ASSERT(inserted.second);
     }
 
-    void SendFAKResponse(ClientId id, const ResponseFAK& msg) {
-        GetClient(id).FAKResponse(msg);
+    void SendResponse(ClientId id, const Response& msg) {
+        GetClient(id).SendResponse(msg);
     }
 
-    void SendQuoteUpdateResponse(ClientId id, const ResponseQuoteUpdate& msg) {
-        GetClient(id).QuoteUpdateResponse(msg);
-    }
-
-    void SendQuoteDeleteResponse(ClientId id, const ResponseQuoteDelete& msg) {
-        GetClient(id).QuoteDeleteResponse(msg);
-    }
-
-    void SendQuoteFillPrivate(ClientId id, const PrivateQuoteFill& msg) {
-        GetClient(id).QuoteFillPrivate(msg);
+    void SendFillPrivate(ClientId id, const PrivateFill& msg) {
+        GetClient(id).FillPrivate(msg);
     }
 
     void SendTradePublic() {

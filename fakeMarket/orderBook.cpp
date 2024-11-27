@@ -6,12 +6,17 @@
 
 namespace FakeMarket {
 
-bool OrderBook::QuoteDelete(const SubmitQuoteDelete& qd) {
+void OrderBook::QuoteDelete(const SubmitQuoteDelete& qd) {
     const auto id = Common::MakeHashId(qd.clientId, qd.productId, qd.quoteId);
 
     const auto it = mQuotes.find(id);
-    if (it == mQuotes.end()) return false;
+    if (it == mQuotes.end()) {
+        mClientUpdater.SendResponse(qd.clientId,
+                                    {qd.msgNumber, Result::QUOTE_DOESNT_EXIST});
+        return;
+    }
 
+    mClientUpdater.SendResponse(qd.clientId, {qd.msgNumber, Result::OK});
     const auto [side, price, volume] = it->second;
     auto& quotes = GetPriceLevel(side, price);
     const auto quoteIt =
@@ -20,17 +25,24 @@ bool OrderBook::QuoteDelete(const SubmitQuoteDelete& qd) {
     ASSERT(quoteIt != quotes.end());
     quotes.erase(quoteIt);
     mQuotes.erase(it);
-    return true;
 }
 
-bool OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu) {
-    if (!CheckValidPrice(qu.price)) return false;
+void OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu) {
+    if (!CheckValidPrice(qu.price)) {
+        mClientUpdater.SendResponse(qu.clientId,
+                                    {qu.msgNumber, Result::PRICE_NA_TICK});
+        return;
+    }
 
     const auto id = Common::MakeHashId(qu.clientId, qu.productId, qu.quoteId);
     const auto it = mQuotes.find(id);
-    if (it != mQuotes.end() && std::get<Side>(it->second) != qu.side)
-        return false;
+    if (it != mQuotes.end() && std::get<Side>(it->second) != qu.side) {
+        mClientUpdater.SendResponse(
+            qu.clientId, {qu.msgNumber, Result::CANNOT_AMEND_QUOTE_SIDE});
+        return;
+    }
 
+    mClientUpdater.SendResponse(qu.clientId, {qu.msgNumber, Result::OK});
     Volume endVolume = qu.volume;
     if (qu.side == Side::BUY && qu.price > mAskQuotes.begin()->first)
         endVolume = CrossBook(qu.price, qu.volume, mAskQuotes);
@@ -39,7 +51,7 @@ bool OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu) {
 
     if (endVolume == Volume{0}) {
         if (it != mQuotes.end()) mQuotes.erase(it);
-        return true;
+        return;
     }
 
     if (it != mQuotes.end()) {
@@ -59,20 +71,23 @@ bool OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu) {
     }
     auto& newLevel = GetPriceLevel(qu.side, qu.price);
     newLevel.emplace_back(QuoteInfo{endVolume, id});
-    return true;
 }
 
-bool OrderBook::FAK(const SubmitFAK& fak) {
-    if (!CheckValidPrice(fak.price)) return false;
+void OrderBook::FAK(const SubmitFAK& fak) {
+    if (!CheckValidPrice(fak.price)) {
+        mClientUpdater.SendResponse(fak.clientId,
+                                    {fak.msgNumber, Result::PRICE_NA_TICK});
+        return;
+    }
 
+    mClientUpdater.SendResponse(fak.clientId, {fak.msgNumber, Result::OK});
     if (fak.side == Side::BUY) {
-        if (fak.price < mAskQuotes.begin()->first) return true;
+        if (fak.price < mAskQuotes.begin()->first) return;
         CrossBook(fak.price, fak.volume, mAskQuotes);
     } else {
-        if (fak.price > mBidQuotes.begin()->first) return true;
+        if (fak.price > mBidQuotes.begin()->first) return;
         CrossBook(fak.price, fak.volume, mBidQuotes);
     }
-    return true;
 }
 
 TOB OrderBook::GetTopOfBook() const {

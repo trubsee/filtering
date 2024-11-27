@@ -30,9 +30,18 @@ void Market::AddToOrders(const MarketOrder& order) {
 }
 
 void Market::ProcessOrder(const MarketOrder& order) {
-    auto pId = std::visit([](auto&& obj) { return obj.productId; }, order);
+    const auto pId =
+        std::visit([](auto&& obj) { return obj.productId; }, order);
     auto it = mOrderBooks.find(pId);
-    if (it == mOrderBooks.end()) return;
+    if (it == mOrderBooks.end()) {
+        const auto msgNumber =
+            std::visit([](auto&& obj) { return obj.msgNumber; }, order);
+        const auto clientId =
+            std::visit([](auto&& obj) { return obj.clientId; }, order);
+        mClientUpdater.SendResponse(clientId,
+                                    {msgNumber, Result::INVALID_PRODUCT});
+        return;
+    }
 
     if (const auto qd = std::get_if<SubmitQuoteDelete>(&order))
         it->second.QuoteDelete(*qd);

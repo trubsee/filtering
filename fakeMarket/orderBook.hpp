@@ -28,11 +28,11 @@ class OrderBook {
     OrderBook(ClientUpdater& clientUpdater, double tickSize)
         : mClientUpdater{clientUpdater}, mTickSize{tickSize} {}
 
-    bool QuoteDelete(const SubmitQuoteDelete&);
+    void QuoteDelete(const SubmitQuoteDelete&);
 
-    bool QuoteUpdate(const SubmitQuoteUpdate&);
+    void QuoteUpdate(const SubmitQuoteUpdate&);
 
-    bool FAK(const SubmitFAK&);
+    void FAK(const SubmitFAK&);
 
     TOB GetTopOfBook() const;
 
