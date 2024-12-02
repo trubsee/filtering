@@ -30,4 +30,4 @@ struct TOB {
     }
 };
 
-std::ostream& operator<<(std::ostream& os, const TOB& tob);
+std::ostream& operator<<(std::ostream&, const TOB&);

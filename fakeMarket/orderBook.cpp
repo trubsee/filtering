@@ -18,13 +18,22 @@ void OrderBook::QuoteDelete(const SubmitQuoteDelete& qd) {
 
     mClientUpdater.SendResponse(qd.clientId, {qd.msgNumber, Result::OK});
     const auto [side, price, volume] = it->second;
-    auto& quotes = GetPriceLevel(side, price);
+    auto& quotes = side == Side::BUY ? 
+        GetPriceLevel<true>(price) :
+        GetPriceLevel<false>(price);
     const auto quoteIt =
         std::find_if(quotes.begin(), quotes.end(), [&id](const auto& quote) {
             return quote.second == id;
         });
     ASSERT(quoteIt != quotes.end());
-    quotes.erase(quoteIt);
+    if (quotes.size() > 1)
+        quotes.erase(quoteIt);
+    else
+    {
+        side == Side::BUY ? 
+            DeletePriceLevel<true>(price) :
+            DeletePriceLevel<false>(price);
+    }
     mQuotes.erase(it);
 }
 
@@ -43,35 +52,23 @@ void OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu) {
         return;
     }
 
-    mClientUpdater.SendResponse(qu.clientId, {qu.msgNumber, Result::OK});
+    std::cout << (it == mQuotes.end()) << std::endl;
+    if (it != mQuotes.end())
+        QuoteDelete(SubmitQuoteDelete{qu.msgNumber, qu.clientId, qu.productId, qu.quoteId});
+    else
+        mClientUpdater.SendResponse(qu.clientId, {qu.msgNumber, Result::OK});
+
     Volume endVolume = qu.volume;
     if (qu.side == Side::BUY && qu.price >= mAskQuotes.begin()->first)
         endVolume = CrossBook(qu.clientId, qu.quoteId, qu.price, qu.volume, mAskQuotes);
     else if (qu.side == Side::SELL && qu.price <= mBidQuotes.begin()->first)
         endVolume = CrossBook(qu.clientId, qu.quoteId, qu.price, qu.volume, mBidQuotes);
+    if (endVolume == Volume{0}) return;
 
-    if (endVolume == Volume{0}) {
-        if (it != mQuotes.end()) mQuotes.erase(it);
-        return;
-    }
-
-    if (it != mQuotes.end()) {
-        auto& [_, oldPrice, oldVolume] = it->second;
-        oldVolume = endVolume;
-        oldPrice = qu.price;
-
-        auto& oldLevel = GetPriceLevel(qu.side, qu.price);
-        auto qIt = std::find_if(
-            oldLevel.begin(), oldLevel.end(), [&id](const auto& qi) {
-                return id == qi.second;
-            });
-        ASSERT(qIt != oldLevel.end());
-        // Policy is to lose queue prio
-        oldLevel.erase(qIt);
-    } else {
-        mQuotes.emplace(id, SingleQuoteDetails{qu.side, qu.price, qu.volume});
-    }
-    auto& newLevel = GetPriceLevel(qu.side, qu.price);
+    mQuotes.emplace(id, SingleQuoteDetails{qu.side, qu.price, qu.volume});
+    auto& newLevel = qu.side == Side::BUY ? 
+        GetPriceLevel<true>(qu.price) :
+        GetPriceLevel<false>(qu.price);
     newLevel.emplace_back(QuoteInfo{endVolume, id});
 }
 
@@ -144,16 +141,7 @@ Volume OrderBook::CrossBook(ClientId clientId, QuoteId quoteId, Price price, Vol
         volume -= quote.first;
         return false;
     };
-
-    const auto cleanUp = [this](const auto& quote) {
-        const auto [cId, pId, qId] = Common::ExtractHashId(quote.second);
-        const auto it = mQuotes.find(quote.second);
-        ASSERT(it != mQuotes.end());
-        const auto [side, price, volume] = it->second;
-        mClientUpdater.SendFillPrivate(
-            cId, {qId, price, volume});
-        mQuotes.erase(it);
-    };
+    const auto deleteQuote = std::bind(&OrderBook::FillQuote, this, Volume{0}, std::placeholders::_1);
 
     while (volume > 0 && !priceLevels.empty() &&
            !Compare()(price, priceLevels.begin()->first)) {
@@ -161,31 +149,44 @@ Volume OrderBook::CrossBook(ClientId clientId, QuoteId quoteId, Price price, Vol
         const auto prevVolume = volume;
         auto it = std::find_if(quotes.begin(), quotes.end(), fillVolume);
 
-        // Delete our records in unordered_map
-        std::for_each(quotes.begin(), it, cleanUp);
+        std::for_each(quotes.begin(), it, deleteQuote);
         if (it != quotes.end()) {
-            // Partially final the final quote
-            const auto infoIt = mQuotes.find(it->second);
-            ASSERT(infoIt != mQuotes.end());
-            auto& quoteVolume = std::get<Volume>(infoIt->second);
-            quoteVolume -= volume;
-            
-            const auto [cId, pId, qId] = Common::ExtractHashId(it->second);
-            mClientUpdater.SendFillPrivate(
-                cId, {qId, price, quoteVolume});
-            
+            // Partially fill final quote
+            if (volume != Volume{0}) FillQuote(volume, *it);
             quotes.erase(quotes.begin(), it);
-            return Volume{0};
+            volume = Volume{0};
         }
         else
         {
-            // Delete price volume entirely
+            // Clear price level
             priceLevels.erase(priceLevels.begin());
         }
         mClientUpdater.SendFillPrivate(
             clientId, {quoteId, price, Volume{prevVolume - volume}});
     }
     return volume;
+}
+    
+template <bool isBuy>
+OrderBook::QuoteVec& OrderBook::GetPriceLevel(Price price) {
+    if constexpr(isBuy) {
+        return mBidQuotes[price];
+    } else {
+        return mAskQuotes[price];
+    }
+}
+
+template <bool isBuy>
+void OrderBook::DeletePriceLevel(Price price) {
+    if constexpr(isBuy) {
+        auto it = mBidQuotes.find(price);
+        ASSERT(it != mBidQuotes.end());
+        mBidQuotes.erase(it);
+    } else {
+        auto it = mAskQuotes.find(price);
+        ASSERT(it != mAskQuotes.end());
+        mAskQuotes.erase(it);
+    }
 }
 
 }  // namespace FakeMarket

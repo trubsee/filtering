@@ -71,6 +71,10 @@ class OrderBookTestFixture : public testing::Test {
         return ob.mQuotes[id];
     }
 
+    bool CheckNoMoreFill() {
+        return !client1.GetFill() && !client2.GetFill() && !client3.GetFill();
+    }
+
     Common::EventDispatcher ed;
     ClientUpdater cu{ed};
     OrderBook ob{cu, 0.05};
@@ -79,6 +83,29 @@ class OrderBookTestFixture : public testing::Test {
     BasicClient client2;
     BasicClient client3;
 };
+
+TEST_F(OrderBookTestFixture, TestDeleteQuote) {
+    auto expectedTob = ob.GetTopOfBook();
+    
+    // quote doesn't exist
+    SubmitQuoteDelete qd{MsgNumber{1}, client3.GetClientId(), pId, QuoteId{1}};
+    ob.QuoteDelete(qd);
+    EXPECT_EQ(client3.GetResponse()->result, Result::QUOTE_DOESNT_EXIST);
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    
+    // end quote
+    qd = SubmitQuoteDelete{MsgNumber{12}, client1.GetClientId(), pId, QuoteId{4}};
+    ob.QuoteDelete(qd);
+    EXPECT_EQ(client1.GetResponse()->result, Result::OK);
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    
+    // front quote
+    qd = SubmitQuoteDelete{MsgNumber{12}, client1.GetClientId(), pId, QuoteId{1}};
+    ob.QuoteDelete(qd);
+    EXPECT_EQ(client1.GetResponse()->result, Result::OK);
+    expectedTob.bidVolume -= 5;
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+}
 
 TEST_F(OrderBookTestFixture, TestFAK) {
     auto expectedTob = ob.GetTopOfBook();
@@ -137,20 +164,26 @@ TEST_F(OrderBookTestFixture, TestFAK) {
     auto quote =
         GetQuote(Common::MakeHashId(client1.GetClientId(), pId, QuoteId{1}));
     EXPECT_EQ(std::get<Volume>(quote), Volume{4});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{1});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{1});
+    EXPECT_TRUE(CheckNoMoreFill());
 
     fak = SubmitFAK{MsgNumber{6},
                     client1.GetClientId(),
                     pId,
                     Side::BUY,
                     Price{1.1},
-                    Volume{1}};
+                    Volume{2}};
     ob.FAK(fak);
     EXPECT_EQ(client1.GetResponse()->result, Result::OK);
-    expectedTob.askVolume -= 1;
+    expectedTob.askVolume -= 2;
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
     quote =
         GetQuote(Common::MakeHashId(client1.GetClientId(), pId, QuoteId{5}));
-    EXPECT_EQ(std::get<Volume>(quote), Volume{3});
+    EXPECT_EQ(std::get<Volume>(quote), Volume{2});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{2});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{2});
+    EXPECT_TRUE(CheckNoMoreFill());
 
     // Clear level
     fak = SubmitFAK{MsgNumber{7},
@@ -164,12 +197,11 @@ TEST_F(OrderBookTestFixture, TestFAK) {
     expectedTob.bidVolume = 12;
     expectedTob.bidPrice = 0.95;
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
-    EXPECT_FALSE(CheckQuoteExists(
-        Common::MakeHashId(client1.GetClientId(), pId, QuoteId{1})));
-    EXPECT_FALSE(CheckQuoteExists(
-        Common::MakeHashId(client2.GetClientId(), pId, QuoteId{1})));
-    EXPECT_FALSE(CheckQuoteExists(
-        Common::MakeHashId(client1.GetClientId(), pId, QuoteId{2})));
+    EXPECT_EQ(client1.GetFill()->volume, Volume{4});
+    EXPECT_EQ(client2.GetFill()->volume, Volume{2});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{3});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{9});
+    EXPECT_TRUE(CheckNoMoreFill());
 
     // Trade on two levels
     fak = SubmitFAK{MsgNumber{8},
@@ -177,18 +209,18 @@ TEST_F(OrderBookTestFixture, TestFAK) {
                     pId,
                     Side::BUY,
                     Price{1.2},
-                    Volume{10}};
+                    Volume{9}};
     ob.FAK(fak);
     EXPECT_EQ(client1.GetResponse()->result, Result::OK);
     expectedTob.askVolume = 1;
     expectedTob.askPrice = 1.15;
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
-    EXPECT_FALSE(CheckQuoteExists(
-        Common::MakeHashId(client1.GetClientId(), pId, QuoteId{1})));
-    EXPECT_FALSE(CheckQuoteExists(
-        Common::MakeHashId(client2.GetClientId(), pId, QuoteId{1})));
-    EXPECT_FALSE(CheckQuoteExists(
-        Common::MakeHashId(client1.GetClientId(), pId, QuoteId{2})));
+    EXPECT_EQ(client1.GetFill()->volume, Volume{2});
+    EXPECT_EQ(client2.GetFill()->volume, Volume{4});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{6});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{3});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{3});
+    EXPECT_TRUE(CheckNoMoreFill());
 
     // Fill one quote
     fak = SubmitFAK{MsgNumber{9},
@@ -201,11 +233,72 @@ TEST_F(OrderBookTestFixture, TestFAK) {
     EXPECT_EQ(client1.GetResponse()->result, Result::OK);
     expectedTob.bidVolume -= 8;
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    EXPECT_EQ(client1.GetFill()->volume, Volume{8});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{8});
+    EXPECT_TRUE(CheckNoMoreFill());
     EXPECT_FALSE(CheckQuoteExists(
         Common::MakeHashId(client1.GetClientId(), pId, QuoteId{3})));
     quote =
         GetQuote(Common::MakeHashId(client1.GetClientId(), pId, QuoteId{8}));
     EXPECT_EQ(std::get<Volume>(quote), Volume{4});
+}
+
+TEST_F(OrderBookTestFixture, TestUpdateQuote) {
+    auto expectedTob = ob.GetTopOfBook();
+    
+    // new tob quote
+    SubmitQuoteUpdate qu{MsgNumber{1}, client3.GetClientId(), pId, Side::BUY, Price{1.05}, Volume{2}, QuoteId{1}};
+    ob.QuoteUpdate(qu);
+    EXPECT_EQ(client3.GetResponse()->result, Result::OK);
+    expectedTob.bidPrice = 1.05;
+    expectedTob.bidVolume = 2;
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    
+    // update quote
+    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::BUY, Price{1.05}, Volume{4}, QuoteId{1}};
+    ob.QuoteUpdate(qu);
+    EXPECT_EQ(client3.GetResponse()->result, Result::OK);
+    expectedTob.bidPrice = 1.05;
+    expectedTob.bidVolume = 4;
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+
+    // try change side
+    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::SELL, Price{1.05}, Volume{4}, QuoteId{1}};
+    ob.QuoteUpdate(qu);
+    EXPECT_EQ(client3.GetResponse()->result, Result::CANNOT_AMEND_QUOTE_SIDE);
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    
+    // amend to bad price
+    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::BUY, Price{1.02}, Volume{4}, QuoteId{1}};
+    ob.QuoteUpdate(qu);
+    EXPECT_EQ(client3.GetResponse()->result, Result::PRICE_NA_TICK);
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    
+    // cross book
+    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::BUY, Price{1.2}, Volume{13}, QuoteId{1}};
+    ob.QuoteUpdate(qu);
+    EXPECT_EQ(client3.GetResponse()->result, Result::OK);
+    expectedTob = TOB{Price{1}, Volume{10}, Price{1.2}, Volume{19}};
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    EXPECT_EQ(client1.GetFill()->volume, Volume{4});
+    EXPECT_EQ(client2.GetFill()->volume, Volume{4});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{4});
+    EXPECT_EQ(client1.GetFill()->volume, Volume{1});
+    EXPECT_EQ(client3.GetFill()->volume, Volume{8});
+    EXPECT_EQ(client3.GetFill()->volume, Volume{4});
+    EXPECT_EQ(client3.GetFill()->volume, Volume{1});
+    EXPECT_TRUE(CheckNoMoreFill());
+    EXPECT_FALSE(CheckQuoteExists(
+        Common::MakeHashId(client3.GetClientId(), pId, QuoteId{1})));
+    
+    // set quote volume to 0
+    qu = SubmitQuoteUpdate{MsgNumber{0}, client1.GetClientId(), pId, Side::BUY, Price{1.2}, Volume{0}, QuoteId{1}};
+    ob.QuoteUpdate(qu);
+    EXPECT_EQ(client1.GetResponse()->result, Result::OK);
+    expectedTob.bidVolume -= 5;
+    EXPECT_EQ(expectedTob, ob.GetTopOfBook());
+    EXPECT_FALSE(CheckQuoteExists(
+        Common::MakeHashId(client1.GetClientId(), pId, QuoteId{1})));
 }
 
 }  // namespace FakeMarket::Test

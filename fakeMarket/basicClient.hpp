@@ -29,7 +29,7 @@ class BasicClient : public IClient {
         return response;
     }
     
-    std::optional<PrivateFill> GetFills() {
+    std::optional<PrivateFill> GetFill() {
         if (mFills.empty()) return std::nullopt;
         const auto fill = mFills.front();
         mFills.pop();

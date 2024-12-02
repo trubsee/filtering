@@ -39,6 +39,8 @@ enum class Result : std::int8_t {
     CANNOT_AMEND_QUOTE_SIDE
 };
 
+std::ostream& operator<<(std::ostream&, const Result&);
+
 struct Response {
     MsgNumber msgNumber;
     Result result;

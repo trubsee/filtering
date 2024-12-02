@@ -47,15 +47,24 @@ class OrderBook {
                1e-9;
     }
 
-    QuoteVec& GetPriceLevel(Side side, Price price) {
-        if (side == Side::BUY) {
-            auto it = mBidQuotes.find(price);
-            ASSERT(it != mBidQuotes.end());
-            return it->second;
+    template <bool isBuy>
+    QuoteVec& GetPriceLevel(Price price);
+    
+    template <bool isBuy>
+    void DeletePriceLevel(Price price);
+    
+    void FillQuote(Volume removeVolume, QuoteInfo& quote)
+    {
+        const auto [cId, pId, qId] = Common::ExtractHashId(quote.second);
+        const auto it = mQuotes.find(quote.second);
+        ASSERT(it != mQuotes.end());
+        auto& [side, price, volume] = it->second;
+        if (removeVolume == Volume{0}) {
+            mQuotes.erase(it);
+            mClientUpdater.SendFillPrivate(cId, {qId, price, volume});
         } else {
-            auto it = mAskQuotes.find(price);
-            ASSERT(it != mAskQuotes.end());
-            return it->second;
+            volume -= removeVolume;
+            mClientUpdater.SendFillPrivate(cId, {qId, price, removeVolume});
         }
     }
 

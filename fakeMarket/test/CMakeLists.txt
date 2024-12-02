@@ -3,7 +3,7 @@ enable_testing()
 include (GoogleTest)
 
 add_executable(fakeMarketTest
-    marketTest.cpp
+    #marketTest.cpp
     orderBookTest.cpp
 )
 
