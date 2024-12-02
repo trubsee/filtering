@@ -16,8 +16,10 @@ TEST(KalmanFilterTest, CheckZeroDrift) {
     const auto obsModel{
         StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
-    KalmanFilter kf{Eigen::Vector2d{0, 10}, Eigen::Matrix2d{{1, 0}, {0, 5}},
-                    stateModel, obsModel};
+    KalmanFilter kf{Eigen::Vector2d{0, 10},
+                    Eigen::Matrix2d{{1, 0}, {0, 5}},
+                    stateModel,
+                    obsModel};
 
     for (unsigned i = 0; i < 1000; ++i) {
         kf.Update(Eigen::Vector2d{1, 12});
@@ -33,8 +35,10 @@ TEST(KalmanFilterTest, ObsMoreThanHidden) {
         Eigen::MatrixXd{{1, 0}, {1, 0}, {0, 1}},
         Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
-    KalmanFilter kf{Eigen::Vector2d{0, 0}, Eigen::Matrix2d{{1, 0}, {0, 1}},
-                    stateModel, obsModel};
+    KalmanFilter kf{Eigen::Vector2d{0, 0},
+                    Eigen::Matrix2d{{1, 0}, {0, 1}},
+                    stateModel,
+                    obsModel};
 
     for (unsigned i = 0; i < 1000; ++i) {
         kf.Update(Eigen::Vector3d{10.1, 9.9, 5.});
@@ -54,8 +58,8 @@ TEST(KalmanFilterTest, HypothesisTest) {
     const auto obsModel{
         StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{noise}})};
 
-    KalmanFilter kf{Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}},
-                    stateModel, obsModel};
+    KalmanFilter kf{
+        Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};
 
     const unsigned ITER{10000};
     std::vector<double> innovations(ITER);

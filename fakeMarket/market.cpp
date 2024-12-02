@@ -7,8 +7,8 @@ Market::Market(unsigned lifetime, double tickSize)
     mOrderBooks.emplace(1, OrderBook{mClientUpdater, 0.1});
 }
 
-Client Market::AddClient() {
-    Client client;
+BasicClient Market::AddClient() {
+    BasicClient client;
     mClientUpdater.ConnectClient(client);
     return client;
 }

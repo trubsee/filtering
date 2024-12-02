@@ -1,6 +1,6 @@
 add_library(fakeMarketLib
     events.hpp
-    client.hpp client.cpp
+    basicClient.hpp basicClient.cpp
     clientUpdater.hpp
     IClient.hpp
     market.hpp market.cpp

@@ -14,7 +14,9 @@ TEST(ParticleFilterTest, CheckZeroDrift) {
     auto rwNoise{StochasticModels::CreateRandomWalk(covNoise)};
 
     ParticleFilter pf{
-        1000, 2, [&rwInit, &initial]() { return rwInit.Mutate(initial); },
+        1000,
+        2,
+        [&rwInit, &initial]() { return rwInit.Mutate(initial); },
         [](const Eigen::MatrixXd& input) { return input; },
         [&rwNoise](const Eigen::MatrixXd& obs, const Eigen::MatrixXd particle) {
             return rwNoise.Probability(obs, particle);

@@ -40,7 +40,7 @@ class OrderBook {
 
    private:
     template <typename Compare>
-    Volume CrossBook(Price, Volume, std::map<Price, QuoteVec, Compare>&);
+    Volume CrossBook(ClientId, QuoteId, Price, Volume, std::map<Price, QuoteVec, Compare>&);
 
     bool CheckValidPrice(Price price) {
         return std::abs(price - std::round(price / mTickSize) * mTickSize) <

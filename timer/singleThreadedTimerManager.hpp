@@ -15,8 +15,8 @@ class SingleThreadedTimerManager {
     unsigned CreateTimer(const Timer::ClockTime::duration& interval,
                          Timer::CallbackFunc callback) {
         Timer timer{Clock::now(), interval, callback};
-        auto it = std::upper_bound(mTimers.begin(), mTimers.end(), timer,
-                                   std::greater<Timer>());
+        auto it = std::upper_bound(
+            mTimers.begin(), mTimers.end(), timer, std::greater<Timer>());
         it = mTimers.insert(it, timer);
         return it->Id();
     }
@@ -31,8 +31,8 @@ class SingleThreadedTimerManager {
         while (mTimers[mTimers.size() - 1].CheckFire(Clock::now())) {
             auto timer = mTimers.back();
             mTimers.pop_back();
-            const auto it = std::upper_bound(mTimers.begin(), mTimers.end(),
-                                             timer, std::greater<Timer>());
+            const auto it = std::upper_bound(
+                mTimers.begin(), mTimers.end(), timer, std::greater<Timer>());
             mTimers.insert(it, timer);
         }
     }

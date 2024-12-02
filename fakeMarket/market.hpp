@@ -7,7 +7,7 @@
 
 #include "common/eventDispatcher.hpp"
 #include "common/types.hpp"
-#include "fakeMarket/client.hpp"
+#include "fakeMarket/basicClient.hpp"
 #include "fakeMarket/clientUpdater.hpp"
 #include "fakeMarket/events.hpp"
 #include "fakeMarket/orderBook.hpp"
@@ -23,7 +23,7 @@ class Market {
 
     void Run();
 
-    Client AddClient();
+    BasicClient AddClient();
 
     void RegisterFAK(const SubmitFAK& fak) { AddToOrders(fak); }
 

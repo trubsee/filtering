@@ -4,7 +4,7 @@
 
 #include "common/assert.hpp"
 #include "common/eventDispatcher.hpp"
-#include "fakeMarket/client.hpp"
+#include "fakeMarket/IClient.hpp"
 #include "fakeMarket/events.hpp"
 
 namespace FakeMarket {

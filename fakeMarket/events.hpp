@@ -44,6 +44,11 @@ struct Response {
     Result result;
 };
 
-struct PrivateFill {};
+struct PrivateFill 
+{
+    QuoteId quoteId;
+    Price price;
+    Volume volume;
+};
 
 }  // namespace FakeMarket
