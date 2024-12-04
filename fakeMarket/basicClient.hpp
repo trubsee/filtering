@@ -11,12 +11,9 @@ namespace FakeMarket {
 
 class BasicClient : public IClient {
    public:
-    BasicClient(std::function<void(const MarketOrder&)> addToOrders) 
-    : 
-        mClientId{nextClientId},
-        mAddToOrders{addToOrders}
-    { 
-        ++nextClientId; 
+    BasicClient(std::function<void(const MarketOrder&)> addToOrders)
+        : mClientId{nextClientId}, mAddToOrders{addToOrders} {
+        ++nextClientId;
     }
 
     ClientId GetClientId() const override { return mClientId; }
@@ -27,7 +24,7 @@ class BasicClient : public IClient {
         mAddToOrders(quoteUpdate);
     }
 
-    void RegisterQuoteDelete(const SubmitQuoteDelete& quoteDelete) override{
+    void RegisterQuoteDelete(const SubmitQuoteDelete& quoteDelete) override {
         mAddToOrders(quoteDelete);
     }
 
@@ -35,9 +32,7 @@ class BasicClient : public IClient {
         mResponses.push(response);
     }
 
-    void FillPrivate(const PrivateFill& fill) override {
-        mFills.push(fill);
-    }
+    void FillPrivate(const PrivateFill& fill) override { mFills.push(fill); }
 
     std::optional<Response> GetResponse() {
         if (mResponses.empty()) return std::nullopt;
@@ -45,7 +40,7 @@ class BasicClient : public IClient {
         mResponses.pop();
         return response;
     }
-    
+
     std::optional<PrivateFill> GetFill() {
         if (mFills.empty()) return std::nullopt;
         const auto fill = mFills.front();
@@ -56,7 +51,7 @@ class BasicClient : public IClient {
    private:
     static ClientId nextClientId;
     ClientId mClientId;
-    
+
     std::function<void(const MarketOrder&)> mAddToOrders;
     std::queue<Response> mResponses;
     std::queue<PrivateFill> mFills;

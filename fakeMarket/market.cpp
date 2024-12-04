@@ -8,7 +8,8 @@ Market::Market(unsigned lifetime, double tickSize)
 }
 
 BasicClient Market::AddClient() {
-    BasicClient client{[this](const MarketOrder& order){ AddToOrders(order); }};
+    BasicClient client{
+        [this](const MarketOrder& order) { AddToOrders(order); }};
     mClientUpdater.ConnectClient(client);
     return client;
 }

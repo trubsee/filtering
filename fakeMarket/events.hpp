@@ -31,7 +31,7 @@ struct SubmitQuoteDelete {
     ProductId productId;
     QuoteId quoteId;
 };
-    
+
 using MarketOrder =
     std::variant<SubmitFAK, SubmitQuoteUpdate, SubmitQuoteDelete>;
 
@@ -50,8 +50,7 @@ struct Response {
     Result result;
 };
 
-struct PrivateFill 
-{
+struct PrivateFill {
     QuoteId quoteId;
     Price price;
     Volume volume;

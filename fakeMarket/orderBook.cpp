@@ -18,9 +18,8 @@ void OrderBook::QuoteDelete(const SubmitQuoteDelete& qd) {
 
     mClientUpdater.SendResponse(qd.clientId, {qd.msgNumber, Result::OK});
     const auto [side, price, volume] = it->second;
-    auto& quotes = side == Side::BUY ? 
-        GetPriceLevel<true>(price) :
-        GetPriceLevel<false>(price);
+    auto& quotes = side == Side::BUY ? GetPriceLevel<true>(price)
+                                     : GetPriceLevel<false>(price);
     const auto quoteIt =
         std::find_if(quotes.begin(), quotes.end(), [&id](const auto& quote) {
             return quote.second == id;
@@ -28,11 +27,9 @@ void OrderBook::QuoteDelete(const SubmitQuoteDelete& qd) {
     ASSERT(quoteIt != quotes.end());
     if (quotes.size() > 1)
         quotes.erase(quoteIt);
-    else
-    {
-        side == Side::BUY ? 
-            DeletePriceLevel<true>(price) :
-            DeletePriceLevel<false>(price);
+    else {
+        side == Side::BUY ? DeletePriceLevel<true>(price)
+                          : DeletePriceLevel<false>(price);
     }
     mQuotes.erase(it);
 }
@@ -54,21 +51,23 @@ void OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu) {
 
     std::cout << (it == mQuotes.end()) << std::endl;
     if (it != mQuotes.end())
-        QuoteDelete(SubmitQuoteDelete{qu.msgNumber, qu.clientId, qu.productId, qu.quoteId});
+        QuoteDelete(SubmitQuoteDelete{
+            qu.msgNumber, qu.clientId, qu.productId, qu.quoteId});
     else
         mClientUpdater.SendResponse(qu.clientId, {qu.msgNumber, Result::OK});
 
     Volume endVolume = qu.volume;
     if (qu.side == Side::BUY && qu.price >= mAskQuotes.begin()->first)
-        endVolume = CrossBook(qu.clientId, qu.quoteId, qu.price, qu.volume, mAskQuotes);
+        endVolume =
+            CrossBook(qu.clientId, qu.quoteId, qu.price, qu.volume, mAskQuotes);
     else if (qu.side == Side::SELL && qu.price <= mBidQuotes.begin()->first)
-        endVolume = CrossBook(qu.clientId, qu.quoteId, qu.price, qu.volume, mBidQuotes);
+        endVolume =
+            CrossBook(qu.clientId, qu.quoteId, qu.price, qu.volume, mBidQuotes);
     if (endVolume == Volume{0}) return;
 
     mQuotes.emplace(id, SingleQuoteDetails{qu.side, qu.price, qu.volume});
-    auto& newLevel = qu.side == Side::BUY ? 
-        GetPriceLevel<true>(qu.price) :
-        GetPriceLevel<false>(qu.price);
+    auto& newLevel = qu.side == Side::BUY ? GetPriceLevel<true>(qu.price)
+                                          : GetPriceLevel<false>(qu.price);
     newLevel.emplace_back(QuoteInfo{endVolume, id});
 }
 
@@ -80,12 +79,10 @@ void OrderBook::FAK(const SubmitFAK& fak) {
     }
 
     mClientUpdater.SendResponse(fak.clientId, {fak.msgNumber, Result::OK});
-    if (fak.side == Side::BUY && fak.price >= mAskQuotes.begin()->first) 
-    {
+    if (fak.side == Side::BUY && fak.price >= mAskQuotes.begin()->first) {
         CrossBook(fak.clientId, QuoteId{0}, fak.price, fak.volume, mAskQuotes);
-    } 
-    else if (fak.side == Side::SELL && fak.price <= mBidQuotes.begin()->first) 
-    {
+    } else if (fak.side == Side::SELL &&
+               fak.price <= mBidQuotes.begin()->first) {
         CrossBook(fak.clientId, QuoteId{0}, fak.price, fak.volume, mBidQuotes);
     }
 }
@@ -131,7 +128,8 @@ void OrderBook::SetBook(BidQuotesMap bidQuotes, AskQuotesMap askQuotes) {
 }
 
 template <typename Compare>
-Volume OrderBook::CrossBook(ClientId clientId, QuoteId quoteId, Price price, Volume volume,
+Volume OrderBook::CrossBook(ClientId clientId, QuoteId quoteId, Price price,
+                            Volume volume,
                             std::map<Price, QuoteVec, Compare>& priceLevels) {
     const auto fillVolume = [&volume](auto& quote) {
         if (volume < quote.first) {
@@ -141,7 +139,8 @@ Volume OrderBook::CrossBook(ClientId clientId, QuoteId quoteId, Price price, Vol
         volume -= quote.first;
         return false;
     };
-    const auto deleteQuote = std::bind(&OrderBook::FillQuote, this, Volume{0}, std::placeholders::_1);
+    const auto deleteQuote = std::bind(
+        &OrderBook::FillQuote, this, Volume{0}, std::placeholders::_1);
 
     while (volume > 0 && !priceLevels.empty() &&
            !Compare()(price, priceLevels.begin()->first)) {
@@ -155,9 +154,7 @@ Volume OrderBook::CrossBook(ClientId clientId, QuoteId quoteId, Price price, Vol
             if (volume != Volume{0}) FillQuote(volume, *it);
             quotes.erase(quotes.begin(), it);
             volume = Volume{0};
-        }
-        else
-        {
+        } else {
             // Clear price level
             priceLevels.erase(priceLevels.begin());
         }
@@ -166,10 +163,10 @@ Volume OrderBook::CrossBook(ClientId clientId, QuoteId quoteId, Price price, Vol
     }
     return volume;
 }
-    
+
 template <bool isBuy>
 OrderBook::QuoteVec& OrderBook::GetPriceLevel(Price price) {
-    if constexpr(isBuy) {
+    if constexpr (isBuy) {
         return mBidQuotes[price];
     } else {
         return mAskQuotes[price];
@@ -178,7 +175,7 @@ OrderBook::QuoteVec& OrderBook::GetPriceLevel(Price price) {
 
 template <bool isBuy>
 void OrderBook::DeletePriceLevel(Price price) {
-    if constexpr(isBuy) {
+    if constexpr (isBuy) {
         auto it = mBidQuotes.find(price);
         ASSERT(it != mBidQuotes.end());
         mBidQuotes.erase(it);

@@ -40,7 +40,8 @@ class OrderBook {
 
    private:
     template <typename Compare>
-    Volume CrossBook(ClientId, QuoteId, Price, Volume, std::map<Price, QuoteVec, Compare>&);
+    Volume CrossBook(ClientId, QuoteId, Price, Volume,
+                     std::map<Price, QuoteVec, Compare>&);
 
     bool CheckValidPrice(Price price) {
         return std::abs(price - std::round(price / mTickSize) * mTickSize) <
@@ -49,12 +50,11 @@ class OrderBook {
 
     template <bool isBuy>
     QuoteVec& GetPriceLevel(Price price);
-    
+
     template <bool isBuy>
     void DeletePriceLevel(Price price);
-    
-    void FillQuote(Volume removeVolume, QuoteInfo& quote)
-    {
+
+    void FillQuote(Volume removeVolume, QuoteInfo& quote) {
         const auto [cId, pId, qId] = Common::ExtractHashId(quote.second);
         const auto it = mQuotes.find(quote.second);
         ASSERT(it != mQuotes.end());

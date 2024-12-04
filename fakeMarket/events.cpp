@@ -3,8 +3,7 @@
 namespace FakeMarket {
 
 std::ostream& operator<<(std::ostream& os, const Result& res) {
-    switch(res)
-    {
+    switch (res) {
         case Result::OK:
             os << "Result: OK";
             break;
@@ -24,4 +23,4 @@ std::ostream& operator<<(std::ostream& os, const Result& res) {
     return os;
 }
 
-}
+}  // namespace FakeMarket

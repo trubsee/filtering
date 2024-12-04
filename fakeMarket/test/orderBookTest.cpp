@@ -79,28 +79,30 @@ class OrderBookTestFixture : public testing::Test {
     ClientUpdater cu{ed};
     OrderBook ob{cu, 0.05};
     ProductId pId{1};
-    BasicClient client1{[](const MarketOrder&){}};
-    BasicClient client2{[](const MarketOrder&){}};
-    BasicClient client3{[](const MarketOrder&){}};
+    BasicClient client1{[](const MarketOrder&) {}};
+    BasicClient client2{[](const MarketOrder&) {}};
+    BasicClient client3{[](const MarketOrder&) {}};
 };
 
 TEST_F(OrderBookTestFixture, TestDeleteQuote) {
     auto expectedTob = ob.GetTopOfBook();
-    
+
     // quote doesn't exist
     SubmitQuoteDelete qd{MsgNumber{1}, client3.GetClientId(), pId, QuoteId{1}};
     ob.QuoteDelete(qd);
     EXPECT_EQ(client3.GetResponse()->result, Result::QUOTE_DOESNT_EXIST);
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
-    
+
     // end quote
-    qd = SubmitQuoteDelete{MsgNumber{12}, client1.GetClientId(), pId, QuoteId{4}};
+    qd = SubmitQuoteDelete{
+        MsgNumber{12}, client1.GetClientId(), pId, QuoteId{4}};
     ob.QuoteDelete(qd);
     EXPECT_EQ(client1.GetResponse()->result, Result::OK);
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
-    
+
     // front quote
-    qd = SubmitQuoteDelete{MsgNumber{12}, client1.GetClientId(), pId, QuoteId{1}};
+    qd = SubmitQuoteDelete{
+        MsgNumber{12}, client1.GetClientId(), pId, QuoteId{1}};
     ob.QuoteDelete(qd);
     EXPECT_EQ(client1.GetResponse()->result, Result::OK);
     expectedTob.bidVolume -= 5;
@@ -245,17 +247,29 @@ TEST_F(OrderBookTestFixture, TestFAK) {
 
 TEST_F(OrderBookTestFixture, TestUpdateQuote) {
     auto expectedTob = ob.GetTopOfBook();
-    
+
     // new tob quote
-    SubmitQuoteUpdate qu{MsgNumber{1}, client3.GetClientId(), pId, Side::BUY, Price{1.05}, Volume{2}, QuoteId{1}};
+    SubmitQuoteUpdate qu{MsgNumber{1},
+                         client3.GetClientId(),
+                         pId,
+                         Side::BUY,
+                         Price{1.05},
+                         Volume{2},
+                         QuoteId{1}};
     ob.QuoteUpdate(qu);
     EXPECT_EQ(client3.GetResponse()->result, Result::OK);
     expectedTob.bidPrice = 1.05;
     expectedTob.bidVolume = 2;
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
-    
+
     // update quote
-    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::BUY, Price{1.05}, Volume{4}, QuoteId{1}};
+    qu = SubmitQuoteUpdate{MsgNumber{0},
+                           client3.GetClientId(),
+                           pId,
+                           Side::BUY,
+                           Price{1.05},
+                           Volume{4},
+                           QuoteId{1}};
     ob.QuoteUpdate(qu);
     EXPECT_EQ(client3.GetResponse()->result, Result::OK);
     expectedTob.bidPrice = 1.05;
@@ -263,19 +277,37 @@ TEST_F(OrderBookTestFixture, TestUpdateQuote) {
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
 
     // try change side
-    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::SELL, Price{1.05}, Volume{4}, QuoteId{1}};
+    qu = SubmitQuoteUpdate{MsgNumber{0},
+                           client3.GetClientId(),
+                           pId,
+                           Side::SELL,
+                           Price{1.05},
+                           Volume{4},
+                           QuoteId{1}};
     ob.QuoteUpdate(qu);
     EXPECT_EQ(client3.GetResponse()->result, Result::CANNOT_AMEND_QUOTE_SIDE);
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
-    
+
     // amend to bad price
-    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::BUY, Price{1.02}, Volume{4}, QuoteId{1}};
+    qu = SubmitQuoteUpdate{MsgNumber{0},
+                           client3.GetClientId(),
+                           pId,
+                           Side::BUY,
+                           Price{1.02},
+                           Volume{4},
+                           QuoteId{1}};
     ob.QuoteUpdate(qu);
     EXPECT_EQ(client3.GetResponse()->result, Result::PRICE_NA_TICK);
     EXPECT_EQ(expectedTob, ob.GetTopOfBook());
-    
+
     // cross book
-    qu = SubmitQuoteUpdate{MsgNumber{0}, client3.GetClientId(), pId, Side::BUY, Price{1.2}, Volume{13}, QuoteId{1}};
+    qu = SubmitQuoteUpdate{MsgNumber{0},
+                           client3.GetClientId(),
+                           pId,
+                           Side::BUY,
+                           Price{1.2},
+                           Volume{13},
+                           QuoteId{1}};
     ob.QuoteUpdate(qu);
     EXPECT_EQ(client3.GetResponse()->result, Result::OK);
     expectedTob = TOB{Price{1}, Volume{10}, Price{1.2}, Volume{19}};
@@ -290,9 +322,15 @@ TEST_F(OrderBookTestFixture, TestUpdateQuote) {
     EXPECT_TRUE(CheckNoMoreFill());
     EXPECT_FALSE(CheckQuoteExists(
         Common::MakeHashId(client3.GetClientId(), pId, QuoteId{1})));
-    
+
     // set quote volume to 0
-    qu = SubmitQuoteUpdate{MsgNumber{0}, client1.GetClientId(), pId, Side::BUY, Price{1.2}, Volume{0}, QuoteId{1}};
+    qu = SubmitQuoteUpdate{MsgNumber{0},
+                           client1.GetClientId(),
+                           pId,
+                           Side::BUY,
+                           Price{1.2},
+                           Volume{0},
+                           QuoteId{1}};
     ob.QuoteUpdate(qu);
     EXPECT_EQ(client1.GetResponse()->result, Result::OK);
     expectedTob.bidVolume -= 5;
