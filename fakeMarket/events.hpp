@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <variant>
 
 #include "common/types.hpp"
 
@@ -30,6 +31,9 @@ struct SubmitQuoteDelete {
     ProductId productId;
     QuoteId quoteId;
 };
+    
+using MarketOrder =
+    std::variant<SubmitFAK, SubmitQuoteUpdate, SubmitQuoteDelete>;
 
 enum class Result : std::int8_t {
     OK = 0,

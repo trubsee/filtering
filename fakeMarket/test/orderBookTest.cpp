@@ -79,9 +79,9 @@ class OrderBookTestFixture : public testing::Test {
     ClientUpdater cu{ed};
     OrderBook ob{cu, 0.05};
     ProductId pId{1};
-    BasicClient client1;
-    BasicClient client2;
-    BasicClient client3;
+    BasicClient client1{[](const MarketOrder&){}};
+    BasicClient client2{[](const MarketOrder&){}};
+    BasicClient client3{[](const MarketOrder&){}};
 };
 
 TEST_F(OrderBookTestFixture, TestDeleteQuote) {

@@ -3,7 +3,6 @@
 #include <mutex>
 #include <queue>
 #include <unordered_map>
-#include <variant>
 
 #include "common/eventDispatcher.hpp"
 #include "common/types.hpp"
@@ -15,25 +14,12 @@
 namespace FakeMarket {
 
 class Market {
-    using MarketOrder =
-        std::variant<SubmitFAK, SubmitQuoteUpdate, SubmitQuoteDelete>;
-
    public:
     Market(unsigned lifetime, double tickSize);
 
     void Run();
 
     BasicClient AddClient();
-
-    void RegisterFAK(const SubmitFAK& fak) { AddToOrders(fak); }
-
-    void RegisterQuoteUpdate(const SubmitQuoteUpdate& quoteUpdate) {
-        AddToOrders(quoteUpdate);
-    }
-
-    void RegisterQuoteDelete(const SubmitQuoteDelete& quoteDelete) {
-        AddToOrders(quoteDelete);
-    }
 
    private:
     void AddToOrders(const MarketOrder&);

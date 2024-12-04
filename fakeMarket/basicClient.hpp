@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <optional>
 #include <queue>
 
@@ -10,9 +11,25 @@ namespace FakeMarket {
 
 class BasicClient : public IClient {
    public:
-    BasicClient() : mClientId{nextClientId} { ++nextClientId; }
+    BasicClient(std::function<void(const MarketOrder&)> addToOrders) 
+    : 
+        mClientId{nextClientId},
+        mAddToOrders{addToOrders}
+    { 
+        ++nextClientId; 
+    }
 
     ClientId GetClientId() const override { return mClientId; }
+
+    void RegisterFAK(const SubmitFAK& fak) override { mAddToOrders(fak); }
+
+    void RegisterQuoteUpdate(const SubmitQuoteUpdate& quoteUpdate) override {
+        mAddToOrders(quoteUpdate);
+    }
+
+    void RegisterQuoteDelete(const SubmitQuoteDelete& quoteDelete) override{
+        mAddToOrders(quoteDelete);
+    }
 
     void SendResponse(const Response& response) override {
         mResponses.push(response);
@@ -39,6 +56,8 @@ class BasicClient : public IClient {
    private:
     static ClientId nextClientId;
     ClientId mClientId;
+    
+    std::function<void(const MarketOrder&)> mAddToOrders;
     std::queue<Response> mResponses;
     std::queue<PrivateFill> mFills;
 };
