@@ -6,8 +6,9 @@
 
 namespace Common {
 
-static Eigen::MatrixXd CalculateCovariance(const Eigen::MatrixXd& X,
-                                           const Eigen::MatrixXd& Y) {
+template <typename MatrixTypeX, typename MatrixTypeY>
+static auto CalculateCovariance(const MatrixTypeX& X,
+                                           const MatrixTypeY& Y) {
     ASSERT(X.rows() == Y.rows());
     const auto n = X.rows();
     const auto centredX = X.rowwise() - X.colwise().mean();

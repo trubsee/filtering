@@ -3,49 +3,57 @@
 #include <Eigen/Dense>
 #include <optional>
 
+#include "filters/stateSpaceModelTraits.hpp"
 #include "stochasticModels/linearGaussian.hpp"
 
 namespace Filters {
 
-template <int numSamples = 1000>
+template <int Hidden, int Observed, int NumSamples = 1000>
 class StochasticEKF {
+    using Traits = StateSpaceModelTraits<Hidden, Observed>;
+    using HiddenMatrix = typename Traits::HiddenMatrix;
+    using ObsMatrix = typename Traits::ObsMatrix;
+    using ObsMatrixT = typename Traits::ObsMatrixT;
+    using ObsNoiseMatrix = typename Traits::ObsNoiseMatrix;
+    using HiddenVector = typename Traits::HiddenVector;
+    using ObsVector = typename Traits::ObsVector;
+    using SampleMatrix = typename std::conditional_t <
+                         Observed<20, Eigen::Matrix<double, Hidden, NumSamples>,
+                                  Eigen::MatrixXd>;
+
    public:
-    StochasticEKF(const Eigen::VectorXd&, const Eigen::MatrixXd&,
+    StochasticEKF(const HiddenVector&, const HiddenMatrix&,
                   const StochasticModels::LinearGaussian&,
                   const StochasticModels::LinearGaussian&);
 
-    void Update(const Eigen::VectorXd&);
+    void Update(const ObsVector&);
 
-    const Eigen::VectorXd& Predict();
+    const HiddenVector& Predict();
 
-    const Eigen::VectorXd& Estimate() const { return mEstimate; }
+    const HiddenVector& Estimate() const { return mEstimate; }
 
-    std::pair<const Eigen::VectorXd&, const Eigen::MatrixXd&>
-    GetLastInnovation() const {
+    std::pair<const ObsVector&, const ObsNoiseMatrix&> GetLastInnovation()
+        const {
         return {y, S};
     }
 
    private:
-    void InitialiseSamples(const Eigen::VectorXd&, const Eigen::MatrixXd&);
+    void InitialiseSamples(const HiddenVector&, const HiddenMatrix&);
 
-    void UpdateSamples(const Eigen::VectorXd&, const Eigen::MatrixXd&);
+    void UpdateSamples(const ObsVector&, const ObsMatrixT&);
 
     // model params
     const StochasticModels::LinearGaussian& mStateModel;
-    Eigen::MatrixXd H;
-    Eigen::MatrixXd R;
-
-    // dimensions
-    const unsigned mHidden;
-    const unsigned mObserved;
+    ObsMatrix H;
+    ObsNoiseMatrix R;
 
     // estimate samples
-    Eigen::MatrixXd mSamples;
-    std::optional<Eigen::VectorXd> mPrediction;
-    Eigen::VectorXd mEstimate;
+    SampleMatrix mSamples;
+    std::optional<HiddenVector> mPrediction;
+    HiddenVector mEstimate;
     // innovation
-    Eigen::VectorXd y;
-    Eigen::MatrixXd S;
+    ObsVector y;
+    ObsNoiseMatrix S;
 };
 
 }  // namespace Filters

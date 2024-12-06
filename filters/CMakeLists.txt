@@ -1,8 +1,9 @@
 enable_testing()
 
 add_library(filtersLib
-    kalmanFilter.hpp kalmanFilter.cpp
+    kalmanFilter.hpp
     particleFilter.hpp particleFilter.cpp
+    stateSpaceModelTraits.hpp
     stochasticEKF.hpp stochasticEKF.ipp
 )
 

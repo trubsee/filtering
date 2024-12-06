@@ -2,44 +2,78 @@
 
 #include <Eigen/Dense>
 
+#include "common/assert.hpp"
+#include "filters/stateSpaceModelTraits.hpp"
 #include "stochasticModels/linearGaussian.hpp"
 
 namespace Filters {
 
+template <int Hidden, int Observed>
 class KalmanFilter {
+    using Traits = StateSpaceModelTraits<Hidden, Observed>;
+    using HiddenMatrix = typename Traits::HiddenMatrix;
+    using ObsMatrix = typename Traits::ObsMatrix;
+    using ObsNoiseMatrix = typename Traits::ObsNoiseMatrix;
+    using HiddenVector = typename Traits::HiddenVector;
+    using ObsVector = typename Traits::ObsVector;
+
    public:
-    KalmanFilter(const Eigen::VectorXd&, const Eigen::MatrixXd&,
-                 const StochasticModels::LinearGaussian&,
-                 const StochasticModels::LinearGaussian&);
+    KalmanFilter(const HiddenVector& stateEstimate,
+                 const HiddenMatrix& covEstimate,
+                 const StochasticModels::LinearGaussian& stateModel,
+                 const StochasticModels::LinearGaussian& obsModel)
+        : F{stateModel.GetCoefMatrix()},
+          H{obsModel.GetCoefMatrix()},
+          Q{stateModel.GetNoiseMatrix()},
+          R{obsModel.GetNoiseMatrix()},
+          x{stateEstimate},
+          P{covEstimate},
+          y{Observed},
+          S{Observed, Observed} {
+        ASSERT(stateEstimate.size() == Hidden);
+        ASSERT(covEstimate.rows() == covEstimate.cols());
+        ASSERT(covEstimate.rows() == Hidden);
+        ASSERT(stateModel.GetNumOutputs() == stateModel.GetNumInputs());
+        ASSERT(stateModel.GetNumOutputs() == Hidden);
+    }
 
-    void Update(const Eigen::VectorXd&);
+    void Update(const ObsVector& obs) {
+        ASSERT(obs.size() == Observed);
 
-    const Eigen::VectorXd& Estimate() const { return x; }
+        // Predict
+        const auto xPred = Predict();
+        const auto PPred = F.transpose() * P * F + Q;
 
-    Eigen::VectorXd Predict() const { return F * x; }
+        // Update
+        y = obs - H * xPred;
+        S = H * PPred * H.transpose() + R;
+        const auto K = PPred * H.transpose() * S.inverse();
+        x = xPred + K * y;
+        P = (HiddenMatrix::Identity(Hidden, Hidden) - K * H) * P;
+    }
 
-    std::pair<const Eigen::VectorXd&, const Eigen::MatrixXd&>
-    GetLastInnovation() const {
+    const HiddenVector& Estimate() const { return x; }
+
+    HiddenVector Predict() const { return F * x; }
+
+    std::pair<const ObsVector&, const ObsNoiseMatrix&> GetLastInnovation()
+        const {
         return {y, S};
     }
 
    private:
     // model params
-    Eigen::MatrixXd F;
-    Eigen::MatrixXd H;
-    Eigen::MatrixXd Q;
-    Eigen::MatrixXd R;
-
-    // dimensions
-    const unsigned mHidden;
-    const unsigned mObserved;
+    HiddenMatrix F;
+    ObsMatrix H;
+    HiddenMatrix Q;
+    ObsNoiseMatrix R;
 
     // current estimate
-    Eigen::VectorXd x;
-    Eigen::MatrixXd P;
+    HiddenVector x;
+    HiddenMatrix P;
     // innovations
-    Eigen::VectorXd y;
-    Eigen::MatrixXd S;
+    ObsVector y;
+    ObsNoiseMatrix S;
 };
 
 }  // namespace Filters

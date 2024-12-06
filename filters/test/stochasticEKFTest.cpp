@@ -16,10 +16,10 @@ TEST(StochasticEKFTest, CheckZeroDrift) {
     const auto obsModel{
         StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
-    StochasticEKF<500> ekf{Eigen::Vector2d{1, 10},
-                           Eigen::Matrix2d{{1, 0}, {0, 10}},
-                           stateModel,
-                           obsModel};
+    StochasticEKF<2, 2, 500> ekf{Eigen::Vector2d{1, 10},
+                                 Eigen::Matrix2d{{1, 0}, {0, 10}},
+                                 stateModel,
+                                 obsModel};
 
     for (unsigned i = 0; i < 1000; ++i) {
         ekf.Update(Eigen::Vector2d{1, 12});
@@ -37,7 +37,7 @@ TEST(StochasticEKFTest, ObsMoreThanHidden) {
         Eigen::MatrixXd{{1, 0}, {1, 0}, {0, 1}},
         Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
-    StochasticEKF<500> ekf{Eigen::Vector2d{0, 0},
+    StochasticEKF<2, 3, 500> ekf{Eigen::Vector2d{0, 0},
                            Eigen::Matrix2d{{1, 0}, {0, 1}},
                            stateModel,
                            obsModel};
@@ -58,7 +58,7 @@ TEST(StochasticEKFTest, HypothesisTest) {
     const auto obsModel{
         StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{noise}})};
 
-    StochasticEKF<500> ekf{
+    StochasticEKF<1, 1, 500> ekf{
         Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};
 
     const unsigned ITER{1000};
