@@ -8,11 +8,12 @@
 
 namespace StochasticModels {
 
-static LinearGaussian CreateRandomWalk(
+template <int NumVar>
+static LinearGaussian<NumVar, NumVar> CreateRandomWalk(
     const Eigen::MatrixXd& covarianceMatrix) {
     ASSERT(covarianceMatrix.rows() == covarianceMatrix.cols());
     const auto size = covarianceMatrix.rows();
-    return LinearGaussian{Eigen::MatrixXd::Identity(size, size),
+    return LinearGaussian<NumVar, NumVar>{Eigen::MatrixXd::Identity(size, size),
                           covarianceMatrix};
 }
 

@@ -9,9 +9,9 @@ namespace Filters::Test {
 TEST(ParticleFilterTest, CheckZeroDrift) {
     const Eigen::MatrixXd initial{{1}, {12}};
     const Eigen::MatrixXd covInit{{1, 0}, {0, 2}};
-    auto rwInit{StochasticModels::CreateRandomWalk(covInit)};
+    auto rwInit{StochasticModels::CreateRandomWalk<2>(covInit)};
     const Eigen::MatrixXd covNoise{{0.1, 0}, {0, 0.2}};
-    auto rwNoise{StochasticModels::CreateRandomWalk(covNoise)};
+    auto rwNoise{StochasticModels::CreateRandomWalk<2>(covNoise)};
 
     ParticleFilter pf{
         1000,

@@ -12,9 +12,9 @@ namespace Filters::Test {
 
 TEST(KalmanFilterTest, CheckZeroDrift) {
     const auto stateModel{
-        StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0, 0}, {0, 0}})};
+        StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0, 0}, {0, 0}})};
     const auto obsModel{
-        StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
+        StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
     KalmanFilter<2, 2> kf{Eigen::Vector2d{0, 10},
                           Eigen::Matrix2d{{1, 0}, {0, 5}},
@@ -29,9 +29,9 @@ TEST(KalmanFilterTest, CheckZeroDrift) {
 }
 
 TEST(KalmanFilterTest, ObsMoreThanHidden) {
-    const auto stateModel{StochasticModels::CreateRandomWalk(
+    const auto stateModel{StochasticModels::CreateRandomWalk<2>(
         Eigen::Matrix2d{{0.1, 0}, {0, 0.1}})};
-    const StochasticModels::LinearGaussian obsModel{
+    const StochasticModels::LinearGaussian<2, 3> obsModel{
         Eigen::MatrixXd{{1, 0}, {1, 0}, {0, 1}},
         Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
@@ -54,9 +54,9 @@ TEST(KalmanFilterTest, HypothesisTest) {
     const double drift{0.5};
     const double noise{0.1};
     const auto stateModel{
-        StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{drift}})};
+        StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{drift}})};
     const auto obsModel{
-        StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{noise}})};
+        StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{noise}})};
 
     KalmanFilter<1, 1> kf{
         Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};

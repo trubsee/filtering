@@ -43,7 +43,8 @@ find_package(Boost REQUIRED)
 # --- GOOGLETEST --- #
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/release-1.11.0.zip
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG main
 )
 FetchContent_MakeAvailable(googletest)
 

@@ -12,9 +12,9 @@ namespace Filters::Test {
 
 TEST(StochasticEKFTest, CheckZeroDrift) {
     const auto stateModel{
-        StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0, 0}, {0, 0}})};
+        StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0, 0}, {0, 0}})};
     const auto obsModel{
-        StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
+        StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
     StochasticEKF<2, 2, 500> ekf{Eigen::Vector2d{1, 10},
                                  Eigen::Matrix2d{{1, 0}, {0, 10}},
@@ -31,16 +31,16 @@ TEST(StochasticEKFTest, CheckZeroDrift) {
 }
 
 TEST(StochasticEKFTest, ObsMoreThanHidden) {
-    const auto stateModel{StochasticModels::CreateRandomWalk(
+    const auto stateModel{StochasticModels::CreateRandomWalk<2>(
         Eigen::Matrix2d{{0.1, 0}, {0, 0.1}})};
-    const StochasticModels::LinearGaussian obsModel{
+    const StochasticModels::LinearGaussian<2, 3> obsModel{
         Eigen::MatrixXd{{1, 0}, {1, 0}, {0, 1}},
         Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
     StochasticEKF<2, 3, 500> ekf{Eigen::Vector2d{0, 0},
-                           Eigen::Matrix2d{{1, 0}, {0, 1}},
-                           stateModel,
-                           obsModel};
+                                 Eigen::Matrix2d{{1, 0}, {0, 1}},
+                                 stateModel,
+                                 obsModel};
 
     for (unsigned i = 0; i < 1000; ++i) {
         ekf.Update(Eigen::Vector3d{10.1, 9.9, 5.});
@@ -54,9 +54,9 @@ TEST(StochasticEKFTest, HypothesisTest) {
     const double drift{0.5};
     const double noise{0.1};
     const auto stateModel{
-        StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{drift}})};
+        StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{drift}})};
     const auto obsModel{
-        StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{noise}})};
+        StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{noise}})};
 
     StochasticEKF<1, 1, 500> ekf{
         Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};

@@ -7,8 +7,8 @@ template <int Hidden, int Observed, int NumSamples>
 StochasticEKF<Hidden, Observed, NumSamples>::StochasticEKF(
     const HiddenVector& stateEstimate,
     const HiddenMatrix& covEstimate,
-    const StochasticModels::LinearGaussian& stateModel,
-    const StochasticModels::LinearGaussian& obsModel
+    const HiddenModel& stateModel,
+    const ObservedModel& obsModel
 )
 :
     mStateModel{stateModel},

@@ -2,7 +2,8 @@ enable_testing()
 
 add_library(stochasticModelsLib
     linearFactoryMethods.hpp
-    linearGaussian.hpp linearGaussian.cpp
+    linearGaussian.hpp
+    linearGaussianTraits.hpp
     stochasticVolatility.hpp stochasticVolatility.cpp
 )
 

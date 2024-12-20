@@ -20,8 +20,8 @@ class KalmanFilter {
    public:
     KalmanFilter(const HiddenVector& stateEstimate,
                  const HiddenMatrix& covEstimate,
-                 const StochasticModels::LinearGaussian& stateModel,
-                 const StochasticModels::LinearGaussian& obsModel)
+                 const typename Traits::HiddenModel& stateModel,
+                 const typename Traits::ObservedModel& obsModel)
         : F{stateModel.GetCoefMatrix()},
           H{obsModel.GetCoefMatrix()},
           Q{stateModel.GetNoiseMatrix()},

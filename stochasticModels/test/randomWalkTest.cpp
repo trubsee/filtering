@@ -9,7 +9,7 @@ TEST(RandomWalkTest, CheckParam) {
     const Eigen::Matrix2d cov{{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
 
-    auto rw{CreateRandomWalk(cov)};
+    auto rw{CreateRandomWalk<2>(cov)};
 
     EXPECT_EQ(rw.GetCoefMatrix(), Eigen::MatrixXd::Identity(2, 2));
     EXPECT_EQ(rw.GetNoiseMatrix(), cov);
@@ -19,7 +19,7 @@ TEST(RandomWalkTest, CheckMutate) {
     const Eigen::Vector2d initial{1, 12};
     const Eigen::Matrix2d cov{{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
-    auto rw{CreateRandomWalk(cov)};
+    auto rw{CreateRandomWalk<2>(cov)};
 
     const unsigned ITER{100000};
     Eigen::MatrixXd mutations(ITER, 2);
@@ -27,6 +27,7 @@ TEST(RandomWalkTest, CheckMutate) {
         mutations.block(i, 0, 1, 2) = rw.Mutate(initial).transpose();
     }
     const auto dataCov = Common::CalculateCovariance(mutations, mutations);
+    std::cout << mutations << std::endl;
 
     EXPECT_EQ(dataCov.rows(), cov.rows());
     EXPECT_EQ(dataCov.cols(), cov.cols());
@@ -40,7 +41,7 @@ TEST(RandomWalkTest, CheckMutate) {
 TEST(RandomWalkTest, CheckProbability) {
     const Eigen::Matrix2d cov{{1, 0.5}, {0.5, 2}};
     EXPECT_EQ(cov.rows(), cov.cols());
-    auto rw{CreateRandomWalk(cov)};
+    auto rw{CreateRandomWalk<2>(cov)};
 
     const Eigen::Vector2d m1{4, 6};
     auto prob = rw.Probability(m1, m1);

@@ -24,12 +24,15 @@ std::normal_distribution<double> norm{0, 1};
 
 static double SampleNormal() { return norm(gen); }
 
-static Eigen::VectorXd SampleMvNormal(const Eigen::MatrixXd& tril) {
+template <typename MatrixType>
+static auto SampleMvNormal(const MatrixType& tril) {
     ASSERT(tril.rows() == tril.cols());
-    Eigen::VectorXd randomVariables(tril.rows());
+    using VectorType = Eigen::Vector<double, MatrixType::RowsAtCompileTime>;
+
+    VectorType randomVariables;
     for (unsigned i = 0; i < tril.rows(); ++i)
         randomVariables(i) = SampleNormal();
-    return tril * randomVariables;
+    return VectorType{tril * randomVariables};
 }
 
 class DiscreteDistribution {

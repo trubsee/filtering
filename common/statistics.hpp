@@ -7,8 +7,7 @@
 namespace Common {
 
 template <typename MatrixTypeX, typename MatrixTypeY>
-static auto CalculateCovariance(const MatrixTypeX& X,
-                                           const MatrixTypeY& Y) {
+static auto CalculateCovariance(const MatrixTypeX& X, const MatrixTypeY& Y) {
     ASSERT(X.rows() == Y.rows());
     const auto n = X.rows();
     const auto centredX = X.rowwise() - X.colwise().mean();

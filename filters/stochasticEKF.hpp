@@ -17,14 +17,16 @@ class StochasticEKF {
     using ObsNoiseMatrix = typename Traits::ObsNoiseMatrix;
     using HiddenVector = typename Traits::HiddenVector;
     using ObsVector = typename Traits::ObsVector;
+    using HiddenModel = typename Traits::HiddenModel;
+    using ObservedModel = typename Traits::ObservedModel;
     using SampleMatrix = typename std::conditional_t <
                          Observed<20, Eigen::Matrix<double, Hidden, NumSamples>,
                                   Eigen::MatrixXd>;
 
    public:
     StochasticEKF(const HiddenVector&, const HiddenMatrix&,
-                  const StochasticModels::LinearGaussian&,
-                  const StochasticModels::LinearGaussian&);
+                  const HiddenModel&,
+                  const ObservedModel&);
 
     void Update(const ObsVector&);
 
@@ -43,7 +45,7 @@ class StochasticEKF {
     void UpdateSamples(const ObsVector&, const ObsMatrixT&);
 
     // model params
-    const StochasticModels::LinearGaussian& mStateModel;
+    const HiddenModel& mStateModel;
     ObsMatrix H;
     ObsNoiseMatrix R;
 

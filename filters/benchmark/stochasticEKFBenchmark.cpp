@@ -10,9 +10,9 @@ static void BenchmarkStochasticEKF(benchmark::State& state) {
     const double drift{0.5};
     const double noise{0.1};
     const auto stateModel{
-        StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{drift}})};
+        StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{drift}})};
     const auto obsModel{
-        StochasticModels::CreateRandomWalk(Eigen::MatrixXd{{noise}})};
+        StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{noise}})};
 
     StochasticEKF<1, 1, 500> ekf{
         Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};
