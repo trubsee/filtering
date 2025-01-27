@@ -2,8 +2,8 @@
 
 namespace FakeMarket {
 
-Market::Market(unsigned lifetime, double tickSize)
-    : mClientUpdater{mEventDispatcher}, mLifetime{lifetime} {
+Market::Market(double tickSize)
+    : mClientUpdater{mEventDispatcher} {
     mOrderBooks.emplace(1, OrderBook{mClientUpdater, 0.1});
 }
 
@@ -14,20 +14,17 @@ BasicClient Market::AddClient() {
     return client;
 }
 
-void Market::Run() {
-    std::unique_lock<std::mutex> lock(mOrderMutex);
-    for (unsigned i; i < mLifetime; ++i) {
-        mOrderCV.wait(lock, [this]() { return !mOrders.empty(); });
-        const MarketOrder order = mOrders.front();
-        mOrders.pop();
-        lock.unlock();
+void Market::Tick() {
+    MarketOrder order;
+    while (mOrders.try_dequeue(order)) 
+    {
+        ProcessOrder(order); 
     }
+    std::this_thread::yield();
 }
 
 void Market::AddToOrders(const MarketOrder& order) {
-    std::lock_guard<std::mutex> lock(mOrderMutex);
-    mOrders.push(order);
-    mOrderCV.notify_one();
+    mOrders.enqueue(order);
 }
 
 void Market::ProcessOrder(const MarketOrder& order) {

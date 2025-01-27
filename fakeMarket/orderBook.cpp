@@ -49,7 +49,6 @@ void OrderBook::QuoteUpdate(const SubmitQuoteUpdate& qu) {
         return;
     }
 
-    std::cout << (it == mQuotes.end()) << std::endl;
     if (it != mQuotes.end())
         QuoteDelete(SubmitQuoteDelete{
             qu.msgNumber, qu.clientId, qu.productId, qu.quoteId});

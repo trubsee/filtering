@@ -5,12 +5,15 @@ add_library(fakeMarketLib
     IClient.hpp
     market.hpp market.cpp
     orderBook.hpp orderBook.cpp
+    threadedClient.hpp threadedClient.cpp
 )
 
 add_subdirectory(test)
 
+
 target_link_libraries(fakeMarketLib
     Boost::boost
     commonLib
+    concurrentqueue
     gtest_main
 )

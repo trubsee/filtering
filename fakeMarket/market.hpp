@@ -1,8 +1,8 @@
 #pragma once
-#include <condition_variable>
-#include <mutex>
-#include <queue>
+#include <iostream>
 #include <unordered_map>
+
+#include "concurrentqueue.h"
 
 #include "common/eventDispatcher.hpp"
 #include "common/types.hpp"
@@ -15,9 +15,9 @@ namespace FakeMarket {
 
 class Market {
    public:
-    Market(unsigned lifetime, double tickSize);
+    Market(double tickSize);
 
-    void Run();
+    void Tick();
 
     BasicClient AddClient();
 
@@ -29,12 +29,7 @@ class Market {
     Common::EventDispatcher mEventDispatcher;
     ClientUpdater mClientUpdater;
 
-    const unsigned mLifetime;
-
-    // consider using tbb_concurrent_queue
-    std::mutex mOrderMutex;
-    std::condition_variable mOrderCV;
-    std::queue<MarketOrder> mOrders;
+    moodycamel::ConcurrentQueue<MarketOrder> mOrders;
 
     std::unordered_map<std::uint8_t, OrderBook> mOrderBooks;
 };
