@@ -4,6 +4,7 @@ include (GoogleTest)
 
 add_executable(commonTest
     eventDispatcherTest.cpp
+    mmapTest.cpp
     utilsTest.cpp
 )
 

@@ -40,6 +40,8 @@ find_package(ALGLIB REQUIRED)
 
 find_package(Boost REQUIRED)
 
+find_library(RT_LIBRARY rt)
+
 # --- GOOGLETEST --- #
 FetchContent_Declare(
   googletest
