@@ -13,8 +13,8 @@ namespace Filters::Test {
 TEST(StochasticEKFTest, CheckZeroDrift) {
     const auto stateModel{
         StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0, 0}, {0, 0}})};
-    const auto obsModel{
-        StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
+    const auto obsModel{StochasticModels::CreateRandomWalk<2>(
+        Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
     StochasticEKF<2, 2, 500> ekf{Eigen::Vector2d{1, 10},
                                  Eigen::Matrix2d{{1, 0}, {0, 10}},

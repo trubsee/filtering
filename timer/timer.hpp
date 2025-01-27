@@ -35,7 +35,6 @@ class Timer {
     bool operator==(const Timer& other) const { return Id() == other.Id(); }
     bool operator==(unsigned id) const { return Id() == id; }
 
-
    private:
     static unsigned nextId;
     unsigned mId;

@@ -24,8 +24,7 @@ class StochasticEKF {
                                   Eigen::MatrixXd>;
 
    public:
-    StochasticEKF(const HiddenVector&, const HiddenMatrix&,
-                  const HiddenModel&,
+    StochasticEKF(const HiddenVector&, const HiddenMatrix&, const HiddenModel&,
                   const ObservedModel&);
 
     void Update(const ObsVector&);

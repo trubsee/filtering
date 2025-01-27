@@ -3,9 +3,8 @@
 #include <optional>
 #include <queue>
 
-#include "concurrentqueue.h"
-
 #include "common/types.hpp"
+#include "concurrentqueue.h"
 #include "fakeMarket/IClient.hpp"
 #include "fakeMarket/events.hpp"
 
@@ -38,8 +37,7 @@ class ThreadedClient : public IClient {
 
     std::optional<Response> GetResponse() {
         Response response;
-        if (mResponses.try_dequeue(response))
-        {
+        if (mResponses.try_dequeue(response)) {
             return response;
         }
         return std::nullopt;
@@ -47,8 +45,7 @@ class ThreadedClient : public IClient {
 
     std::optional<PrivateFill> GetFill() {
         PrivateFill fill;
-        if (mFills.try_dequeue(fill))
-        {
+        if (mFills.try_dequeue(fill)) {
             return fill;
         }
         return std::nullopt;
@@ -64,4 +61,3 @@ class ThreadedClient : public IClient {
 };
 
 }  // namespace FakeMarket
-

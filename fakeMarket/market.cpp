@@ -2,8 +2,7 @@
 
 namespace FakeMarket {
 
-Market::Market(double tickSize)
-    : mClientUpdater{mEventDispatcher} {
+Market::Market(double tickSize) : mClientUpdater{mEventDispatcher} {
     mOrderBooks.emplace(1, OrderBook{mClientUpdater, 0.1});
 }
 
@@ -16,16 +15,13 @@ BasicClient Market::AddClient() {
 
 void Market::Tick() {
     MarketOrder order;
-    while (mOrders.try_dequeue(order)) 
-    {
-        ProcessOrder(order); 
+    while (mOrders.try_dequeue(order)) {
+        ProcessOrder(order);
     }
     std::this_thread::yield();
 }
 
-void Market::AddToOrders(const MarketOrder& order) {
-    mOrders.enqueue(order);
-}
+void Market::AddToOrders(const MarketOrder& order) { mOrders.enqueue(order); }
 
 void Market::ProcessOrder(const MarketOrder& order) {
     const auto pId =

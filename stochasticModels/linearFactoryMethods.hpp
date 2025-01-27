@@ -14,7 +14,7 @@ static LinearGaussian<NumVar, NumVar> CreateRandomWalk(
     ASSERT(covarianceMatrix.rows() == covarianceMatrix.cols());
     const auto size = covarianceMatrix.rows();
     return LinearGaussian<NumVar, NumVar>{Eigen::MatrixXd::Identity(size, size),
-                          covarianceMatrix};
+                                          covarianceMatrix};
 }
 
 }  // namespace StochasticModels

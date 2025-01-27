@@ -2,10 +2,9 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "concurrentqueue.h"
-
 #include "common/eventDispatcher.hpp"
 #include "common/types.hpp"
+#include "concurrentqueue.h"
 #include "fakeMarket/basicClient.hpp"
 #include "fakeMarket/clientUpdater.hpp"
 #include "fakeMarket/events.hpp"

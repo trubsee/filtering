@@ -5,4 +5,3 @@ namespace FakeMarket {
 ClientId ThreadedClient::nextClientId{1};
 
 }
-

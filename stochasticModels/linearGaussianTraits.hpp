@@ -24,4 +24,4 @@ class LinearGaussianTraits {
         Output<20, Eigen::Vector<double, Output>, Eigen::VectorXd>;
 };
 
-}
+}  // namespace StochasticModels
