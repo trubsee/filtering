@@ -1,9 +1,10 @@
+#include "gtest/gtest.h"
+
 #include "fakeMarket/events.hpp"
 #include "fakeMarket/market.hpp"
-#include "gtest/gtest.h"
 #include "timer/singleThreadedTimerManager.hpp"
 
-namespace FakeMarket {
+namespace FakeMarket::Test {
 
 TEST(MaketTest, RegisterOrders) {
     Market market(0.1);

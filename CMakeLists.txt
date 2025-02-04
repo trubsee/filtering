@@ -91,6 +91,7 @@ list(APPEND SOURCE_DIRECTORIES
     "common"
     "fakeMarket"
     "filters"
+    "spline"
     "stochasticModels"
     "timer"
 )

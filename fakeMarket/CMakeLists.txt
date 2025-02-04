@@ -15,5 +15,4 @@ target_link_libraries(fakeMarketLib
     Boost::boost
     commonLib
     concurrentqueue
-    gtest_main
 )
