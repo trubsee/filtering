@@ -10,6 +10,7 @@ namespace Filters {
 
 template <int Hidden, int Observed>
 class KalmanFilter {
+   public:
     using Traits = StateSpaceModelTraits<Hidden, Observed>;
     using HiddenMatrix = typename Traits::HiddenMatrix;
     using ObsMatrix = typename Traits::ObsMatrix;
@@ -17,15 +18,14 @@ class KalmanFilter {
     using HiddenVector = typename Traits::HiddenVector;
     using ObsVector = typename Traits::ObsVector;
 
-   public:
     KalmanFilter(const HiddenVector& stateEstimate,
-                 const HiddenMatrix& covEstimate,
-                 const typename Traits::HiddenModel& stateModel,
-                 const typename Traits::ObservedModel& obsModel)
-        : F{stateModel.GetCoefMatrix()},
-          H{obsModel.GetCoefMatrix()},
-          Q{stateModel.GetNoiseMatrix()},
-          R{obsModel.GetNoiseMatrix()},
+                 const HiddenMatrix& covEstimate, const HiddenMatrix& f,
+                 const HiddenMatrix& q, const ObsMatrix& h,
+                 const ObsNoiseMatrix& r)
+        : F{f},
+          H{h},
+          Q{q},
+          R{r},
           x{stateEstimate},
           P{covEstimate},
           y{Observed},
@@ -33,9 +33,20 @@ class KalmanFilter {
         ASSERT(stateEstimate.size() == Hidden);
         ASSERT(covEstimate.rows() == covEstimate.cols());
         ASSERT(covEstimate.rows() == Hidden);
-        ASSERT(stateModel.GetNumOutputs() == stateModel.GetNumInputs());
-        ASSERT(stateModel.GetNumOutputs() == Hidden);
+        // ASSERT(stateModel.GetNumOutputs() == stateModel.GetNumInputs());
+        // ASSERT(stateModel.GetNumOutputs() == Hidden);
     }
+
+    KalmanFilter(const HiddenVector& stateEstimate,
+                 const HiddenMatrix& covEstimate,
+                 const typename Traits::HiddenModel& stateModel,
+                 const typename Traits::ObservedModel& obsModel)
+        : KalmanFilter{stateEstimate,
+                       covEstimate,
+                       stateModel.GetCoefMatrix(),
+                       stateModel.GetNoiseMatrix(),
+                       obsModel.GetCoefMatrix(),
+                       obsModel.GetNoiseMatrix()} {}
 
     void Update(const ObsVector& obs) {
         ASSERT(obs.size() == Observed);

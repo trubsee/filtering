@@ -9,19 +9,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native -mtune=native")
 
 # Project wide CXX flags
 string(CONCAT CXX_IGNORES
     "-Wno-unknown-warning-option "
     # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
     "-Wno-restrict "
-    # std::optional is triggering this a lot
-    "-Wno-maybe-uninitialized "
-    # imgui
-    "-Wno-format-security "
-    # GCC is overzealous
-    "-Wno-dangling-reference "
     # The usual things I don't worry about
     "-Wno-unused-variable "
     "-Wno-unused-parameter "
@@ -83,6 +77,14 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_MakeAvailable(concurrentqueue)
+
+# --- FetchContent --- #
+FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11.git 
+    GIT_TAG v2.12.0
+)
+FetchContent_MakeAvailable(pybind11)
 
 # --- project directories --- # 
 include_directories(".")
