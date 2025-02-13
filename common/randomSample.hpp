@@ -27,9 +27,13 @@ static double SampleNormal() { return norm(gen); }
 template <typename MatrixType>
 static auto SampleMvNormal(const MatrixType& tril) {
     ASSERT(tril.rows() == tril.cols());
-    using VectorType = Eigen::Vector<double, MatrixType::RowsAtCompileTime>;
+    using VectorType = typename std::conditional<
+        Eigen::internal::traits<MatrixType>::RowsAtCompileTime ==
+            Eigen::Dynamic,
+        Eigen::VectorXd,
+        Eigen::Vector<double, MatrixType::RowsAtCompileTime>>::type;
 
-    VectorType randomVariables;
+    VectorType randomVariables(tril.rows());
     for (unsigned i = 0; i < tril.rows(); ++i)
         randomVariables(i) = SampleNormal();
     return VectorType{tril * randomVariables};

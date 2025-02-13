@@ -32,9 +32,9 @@ TEST(StochasticEKFTest, CheckZeroDriftStatic) {
 
 TEST(StochasticEKFTest, CheckZeroDriftDynamic) {
     const auto stateModel{
-        StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0, 0}, {0, 0}})};
-    const auto obsModel{StochasticModels::CreateRandomWalk<2>(
-        Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
+        StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0, 0}, {0, 0}})};
+    const auto obsModel{
+        StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
     StochasticEKF::Dynamic ekf{Eigen::Vector2d{1, 10},
                                Eigen::Matrix2d{{1, 0}, {0, 10}},

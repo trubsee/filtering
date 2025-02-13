@@ -64,7 +64,7 @@ struct StochasticEKF {
     using Static =
         StochasticEKFImpl<StaticSSMTraits<Hidden, Observed>, NumSamples>;
 
-    using Dynamic = StochasticEKFImpl<DynamicSSMTraits, 1000>;
+    using Dynamic = StochasticEKFImpl<DynamicSSMTraits, 200>;
 };
 
 }  // namespace Filters

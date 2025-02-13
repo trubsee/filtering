@@ -12,6 +12,8 @@ StochasticEKFImpl<Traits, NumSamples>::StochasticEKFImpl(
       H{h},
       R{r},
       mSamples{q.rows(), NumSamples},
+      mPrediction{std::nullopt},
+      mEstimate{q.rows()},
       y{r.rows()},
       S{r.rows(), r.rows()} {
     // ASSERT(stateEstimate.size() == Hidden);
@@ -61,9 +63,8 @@ StochasticEKFImpl<Traits, NumSamples>::Predict() {
     for (unsigned i = 0; i < NumSamples; ++i) {
         auto newSample = mStateModel.Mutate(mSamples.col(i));
         mSamples.block(0, i, mEstimate.size(), 1) = newSample;
-        sum += newSample;
     }
-    mPrediction = sum / NumSamples;
+    mPrediction = mSamples.rowwise().sum() / NumSamples;
     return *mPrediction;
 }
 
