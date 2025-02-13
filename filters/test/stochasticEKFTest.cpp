@@ -10,7 +10,7 @@
 
 namespace Filters::Test {
 
-TEST(StochasticEKFTest, CheckZeroDrift) {
+TEST(StochasticEKFTest, CheckZeroDriftStatic) {
     const auto stateModel{
         StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0, 0}, {0, 0}})};
     const auto obsModel{StochasticModels::CreateRandomWalk<2>(
@@ -20,6 +20,26 @@ TEST(StochasticEKFTest, CheckZeroDrift) {
                                          Eigen::Matrix2d{{1, 0}, {0, 10}},
                                          stateModel,
                                          obsModel};
+
+    for (unsigned i = 0; i < 1000; ++i) {
+        ekf.Update(Eigen::Vector2d{1, 12});
+    }
+    EXPECT_NEAR(ekf.Estimate()(0), 1, 0.1);
+    EXPECT_NEAR(ekf.Estimate()(1), 12, 0.1);
+    EXPECT_NEAR(ekf.Predict()(0), 1, 0.1);
+    EXPECT_NEAR(ekf.Predict()(1), 12, 0.1);
+}
+
+TEST(StochasticEKFTest, CheckZeroDriftDynamic) {
+    const auto stateModel{
+        StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0, 0}, {0, 0}})};
+    const auto obsModel{StochasticModels::CreateRandomWalk<2>(
+        Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
+
+    StochasticEKF::Dynamic ekf{Eigen::Vector2d{1, 10},
+                               Eigen::Matrix2d{{1, 0}, {0, 10}},
+                               stateModel,
+                               obsModel};
 
     for (unsigned i = 0; i < 1000; ++i) {
         ekf.Update(Eigen::Vector2d{1, 12});

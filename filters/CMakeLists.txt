@@ -5,6 +5,7 @@ add_library(filtersLib
     particleFilter.hpp particleFilter.cpp
     pythonFilter.cpp
     python/kf.cpp
+    python/sekf.cpp
     stateSpaceModelTraits.hpp
     stochasticEKF.hpp stochasticEKF.ipp
 )

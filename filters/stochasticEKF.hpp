@@ -11,6 +11,7 @@ namespace Filters {
 
 template <typename Traits, int NumSamples>
 class StochasticEKFImpl {
+   public:
     using HiddenMatrix = typename Traits::HiddenMatrix;
     using ObsMatrix = typename Traits::ObsMatrix;
     using ObsMatrixT = typename Traits::ObsMatrixT;
@@ -21,7 +22,6 @@ class StochasticEKFImpl {
     using ObservedModel = typename Traits::ObservedModel;
     using SampleMatrix = typename Traits::SampleMatrix<NumSamples>;
 
-   public:
     StochasticEKFImpl(const HiddenVector&, const HiddenMatrix&,
                       const HiddenMatrix&, const HiddenMatrix&,
                       const ObsMatrix&, const ObsNoiseMatrix&);

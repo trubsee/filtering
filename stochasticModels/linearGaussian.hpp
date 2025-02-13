@@ -63,7 +63,7 @@ class LinearGaussianImpl {
     NoiseMatrix mTril;
     NoiseMatrix mInverseNoise;
     double mMaxProb;
-    
+
     unsigned mInputs;
     unsigned mOutputs;
 };
