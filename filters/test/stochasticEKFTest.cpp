@@ -16,10 +16,10 @@ TEST(StochasticEKFTest, CheckZeroDrift) {
     const auto obsModel{StochasticModels::CreateRandomWalk<2>(
         Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
-    StochasticEKF<2, 2, 500> ekf{Eigen::Vector2d{1, 10},
-                                 Eigen::Matrix2d{{1, 0}, {0, 10}},
-                                 stateModel,
-                                 obsModel};
+    StochasticEKF::Static<2, 2, 500> ekf{Eigen::Vector2d{1, 10},
+                                         Eigen::Matrix2d{{1, 0}, {0, 10}},
+                                         stateModel,
+                                         obsModel};
 
     for (unsigned i = 0; i < 1000; ++i) {
         ekf.Update(Eigen::Vector2d{1, 12});
@@ -33,14 +33,14 @@ TEST(StochasticEKFTest, CheckZeroDrift) {
 TEST(StochasticEKFTest, ObsMoreThanHidden) {
     const auto stateModel{StochasticModels::CreateRandomWalk<2>(
         Eigen::Matrix2d{{0.1, 0}, {0, 0.1}})};
-    const StochasticModels::LinearGaussian<2, 3> obsModel{
+    const StochasticModels::LinearGaussian::Static<2, 3> obsModel{
         Eigen::MatrixXd{{1, 0}, {1, 0}, {0, 1}},
         Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
-    StochasticEKF<2, 3, 500> ekf{Eigen::Vector2d{0, 0},
-                                 Eigen::Matrix2d{{1, 0}, {0, 1}},
-                                 stateModel,
-                                 obsModel};
+    StochasticEKF::Static<2, 3, 500> ekf{Eigen::Vector2d{0, 0},
+                                         Eigen::Matrix2d{{1, 0}, {0, 1}},
+                                         stateModel,
+                                         obsModel};
 
     for (unsigned i = 0; i < 1000; ++i) {
         ekf.Update(Eigen::Vector3d{10.1, 9.9, 5.});
@@ -58,7 +58,7 @@ TEST(StochasticEKFTest, HypothesisTest) {
     const auto obsModel{
         StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{noise}})};
 
-    StochasticEKF<1, 1, 500> ekf{
+    StochasticEKF::Static<1, 1, 500> ekf{
         Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};
 
     const unsigned ITER{1000};

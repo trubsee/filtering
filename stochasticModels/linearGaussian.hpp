@@ -3,6 +3,7 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Dense>
 #include <cmath>
+#include <iostream>
 
 #include "common/assert.hpp"
 #include "common/constants.hpp"
@@ -11,17 +12,18 @@
 
 namespace StochasticModels {
 
-template <int Input, int Output>
-class LinearGaussian {
-    using Traits = LinearGaussianTraits<Input, Output>;
+namespace {
+
+template <typename Traits>
+class LinearGaussianImpl {
     using CoefMatrix = typename Traits::CoefMatrix;
     using NoiseMatrix = typename Traits::NoiseMatrix;
     using InputVector = typename Traits::InputVector;
     using OutputVector = typename Traits::OutputVector;
 
    public:
-    LinearGaussian(const CoefMatrix& coefficients,
-                   const NoiseMatrix& covarianceMatrix)
+    LinearGaussianImpl(const CoefMatrix& coefficients,
+                       const NoiseMatrix& covarianceMatrix)
         : mOutputs{(unsigned)coefficients.rows()},
           mInputs{(unsigned)coefficients.cols()},
           mCoef{coefficients} {
@@ -57,13 +59,21 @@ class LinearGaussian {
     unsigned GetNumOutputs() const { return mOutputs; }
 
    private:
-    const unsigned mInputs;
-    const unsigned mOutputs;
-
     CoefMatrix mCoef;
     NoiseMatrix mTril;
     NoiseMatrix mInverseNoise;
     double mMaxProb;
+    
+    unsigned mInputs;
+    unsigned mOutputs;
+};
+
+}  // namespace
+
+struct LinearGaussian {
+    template <int Input, int Output>
+    using Static = LinearGaussianImpl<StaticLGTraits<Input, Output>>;
+    using Dynamic = LinearGaussianImpl<DynamicLGTraits>;
 };
 
 }  // namespace StochasticModels

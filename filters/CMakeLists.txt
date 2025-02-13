@@ -3,7 +3,8 @@ enable_testing()
 add_library(filtersLib
     kalmanFilter.hpp
     particleFilter.hpp particleFilter.cpp
-    pythonKF.cpp
+    pythonFilter.cpp
+    python/kf.cpp
     stateSpaceModelTraits.hpp
     stochasticEKF.hpp stochasticEKF.ipp
 )
@@ -23,5 +24,5 @@ target_link_libraries(filtersLib
 
 
 include_directories(${eigen_SOURCE_DIR})
-pybind11_add_module(pythonKF pythonKF.cpp)
+pybind11_add_module(fast_filters pythonFilter.cpp)
 

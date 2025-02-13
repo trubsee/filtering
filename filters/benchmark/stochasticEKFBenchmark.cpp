@@ -14,7 +14,7 @@ static void BenchmarkStochasticEKF(benchmark::State& state) {
     const auto obsModel{
         StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{noise}})};
 
-    StochasticEKF<1, 1, 500> ekf{
+    StochasticEKF::Static<1, 1, 500> ekf{
         Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};
 
     const unsigned ITER{1000};

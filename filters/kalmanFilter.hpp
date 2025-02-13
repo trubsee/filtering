@@ -8,48 +8,49 @@
 
 namespace Filters {
 
-template <int Hidden, int Observed>
-class KalmanFilter {
+namespace {
+
+template <typename Traits>
+class KalmanFilterImpl {
    public:
-    using Traits = StateSpaceModelTraits<Hidden, Observed>;
     using HiddenMatrix = typename Traits::HiddenMatrix;
     using ObsMatrix = typename Traits::ObsMatrix;
     using ObsNoiseMatrix = typename Traits::ObsNoiseMatrix;
     using HiddenVector = typename Traits::HiddenVector;
     using ObsVector = typename Traits::ObsVector;
 
-    KalmanFilter(const HiddenVector& stateEstimate,
-                 const HiddenMatrix& covEstimate, const HiddenMatrix& f,
-                 const HiddenMatrix& q, const ObsMatrix& h,
-                 const ObsNoiseMatrix& r)
+    KalmanFilterImpl(const HiddenVector& stateEstimate,
+                     const HiddenMatrix& covEstimate, const HiddenMatrix& f,
+                     const HiddenMatrix& q, const ObsMatrix& h,
+                     const ObsNoiseMatrix& r)
         : F{f},
           H{h},
           Q{q},
           R{r},
           x{stateEstimate},
           P{covEstimate},
-          y{Observed},
-          S{Observed, Observed} {
-        ASSERT(stateEstimate.size() == Hidden);
+          y{r.cols()},
+          S{r.cols(), r.cols()} {
+        // ASSERT(stateEstimate.size() == Hidden);
         ASSERT(covEstimate.rows() == covEstimate.cols());
-        ASSERT(covEstimate.rows() == Hidden);
-        // ASSERT(stateModel.GetNumOutputs() == stateModel.GetNumInputs());
-        // ASSERT(stateModel.GetNumOutputs() == Hidden);
+        // ASSERT(covEstimate.rows() == Hidden);
+        //  ASSERT(stateModel.GetNumOutputs() == stateModel.GetNumInputs());
+        //  ASSERT(stateModel.GetNumOutputs() == Hidden);
     }
 
-    KalmanFilter(const HiddenVector& stateEstimate,
-                 const HiddenMatrix& covEstimate,
-                 const typename Traits::HiddenModel& stateModel,
-                 const typename Traits::ObservedModel& obsModel)
-        : KalmanFilter{stateEstimate,
-                       covEstimate,
-                       stateModel.GetCoefMatrix(),
-                       stateModel.GetNoiseMatrix(),
-                       obsModel.GetCoefMatrix(),
-                       obsModel.GetNoiseMatrix()} {}
+    KalmanFilterImpl(const HiddenVector& stateEstimate,
+                     const HiddenMatrix& covEstimate,
+                     const typename Traits::HiddenModel& stateModel,
+                     const typename Traits::ObservedModel& obsModel)
+        : KalmanFilterImpl{stateEstimate,
+                           covEstimate,
+                           stateModel.GetCoefMatrix(),
+                           stateModel.GetNoiseMatrix(),
+                           obsModel.GetCoefMatrix(),
+                           obsModel.GetNoiseMatrix()} {}
 
     void Update(const ObsVector& obs) {
-        ASSERT(obs.size() == Observed);
+        ASSERT(obs.size() == y.size());
 
         // Predict
         const auto xPred = Predict();
@@ -60,7 +61,7 @@ class KalmanFilter {
         S = H * PPred * H.transpose() + R;
         const auto K = PPred * H.transpose() * S.inverse();
         x = xPred + K * y;
-        P = (HiddenMatrix::Identity(Hidden, Hidden) - K * H) * P;
+        P = (Traits::Identity(x.size()) - K * H) * P;
     }
 
     const HiddenVector& Estimate() const { return x; }
@@ -85,6 +86,15 @@ class KalmanFilter {
     // innovations
     ObsVector y;
     ObsNoiseMatrix S;
+};
+
+}  // namespace
+
+struct KalmanFilter {
+    template <int Hidden, int Observed>
+    using Static = KalmanFilterImpl<StaticSSMTraits<Hidden, Observed>>;
+
+    using Dynamic = KalmanFilterImpl<DynamicSSMTraits>;
 };
 
 }  // namespace Filters

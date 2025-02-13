@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <iostream>
 #include <optional>
 
 #include "filters/stateSpaceModelTraits.hpp"
@@ -8,9 +9,8 @@
 
 namespace Filters {
 
-template <int Hidden, int Observed, int NumSamples = 1000>
-class StochasticEKF {
-    using Traits = StateSpaceModelTraits<Hidden, Observed>;
+template <typename Traits, int NumSamples>
+class StochasticEKFImpl {
     using HiddenMatrix = typename Traits::HiddenMatrix;
     using ObsMatrix = typename Traits::ObsMatrix;
     using ObsMatrixT = typename Traits::ObsMatrixT;
@@ -19,13 +19,15 @@ class StochasticEKF {
     using ObsVector = typename Traits::ObsVector;
     using HiddenModel = typename Traits::HiddenModel;
     using ObservedModel = typename Traits::ObservedModel;
-    using SampleMatrix = typename std::conditional_t <
-                         Observed<20, Eigen::Matrix<double, Hidden, NumSamples>,
-                                  Eigen::MatrixXd>;
+    using SampleMatrix = typename Traits::SampleMatrix<NumSamples>;
 
    public:
-    StochasticEKF(const HiddenVector&, const HiddenMatrix&, const HiddenModel&,
-                  const ObservedModel&);
+    StochasticEKFImpl(const HiddenVector&, const HiddenMatrix&,
+                      const HiddenMatrix&, const HiddenMatrix&,
+                      const ObsMatrix&, const ObsNoiseMatrix&);
+
+    StochasticEKFImpl(const HiddenVector&, const HiddenMatrix&,
+                      const HiddenModel&, const ObservedModel&);
 
     void Update(const ObsVector&);
 
@@ -44,7 +46,7 @@ class StochasticEKF {
     void UpdateSamples(const ObsVector&, const ObsMatrixT&);
 
     // model params
-    const HiddenModel& mStateModel;
+    HiddenModel mStateModel;
     ObsMatrix H;
     ObsNoiseMatrix R;
 
@@ -55,6 +57,14 @@ class StochasticEKF {
     // innovation
     ObsVector y;
     ObsNoiseMatrix S;
+};
+
+struct StochasticEKF {
+    template <int Hidden, int Observed, int NumSamples>
+    using Static =
+        StochasticEKFImpl<StaticSSMTraits<Hidden, Observed>, NumSamples>;
+
+    using Dynamic = StochasticEKFImpl<DynamicSSMTraits, 1000>;
 };
 
 }  // namespace Filters
