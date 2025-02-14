@@ -1,10 +1,12 @@
 enable_testing()
 
 add_library(filtersLib
+    deterministicEKF.hpp deterministicEKF.ipp
     kalmanFilter.hpp
     particleFilter.hpp particleFilter.cpp
     pythonFilter.cpp
     python/kf.cpp
+    python/dekf.cpp
     python/sekf.cpp
     stateSpaceModelTraits.hpp
     stochasticEKF.hpp stochasticEKF.ipp

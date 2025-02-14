@@ -3,20 +3,20 @@
 #include <random>
 
 #include "common/randomSample.hpp"
-#include "filters/stochasticEKF.ipp"
+#include "filters/deterministicEKF.ipp"
 #include "gtest/gtest.h"
 #include "libalglib/statistics.h"
 #include "stochasticModels/linearFactoryMethods.hpp"
 
 namespace Filters::Test {
 
-TEST(StochasticEKFTest, CheckZeroDriftStatic) {
+TEST(DeterministicEKFTest, CheckZeroDriftStatic) {
     const auto stateModel{
         StochasticModels::CreateRandomWalk<2>(Eigen::Matrix2d{{0, 0}, {0, 0}})};
     const auto obsModel{StochasticModels::CreateRandomWalk<2>(
         Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
-    StochasticEKF::Static<2, 2, 500> ekf{Eigen::Vector2d{1, 10},
+    DeterministicEKF::Static<2, 2, 500> ekf{Eigen::Vector2d{1, 10},
                                          Eigen::Matrix2d{{1, 0}, {0, 10}},
                                          stateModel,
                                          obsModel};
@@ -30,13 +30,13 @@ TEST(StochasticEKFTest, CheckZeroDriftStatic) {
     EXPECT_NEAR(ekf.Predict()(1), 12, 0.1);
 }
 
-TEST(StochasticEKFTest, CheckZeroDriftDynamic) {
+TEST(DeterministicEKFTest, CheckZeroDriftDynamic) {
     const auto stateModel{
         StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0, 0}, {0, 0}})};
     const auto obsModel{
         StochasticModels::CreateRandomWalk(Eigen::Matrix2d{{0.5, 0}, {0, 2}})};
 
-    StochasticEKF::Dynamic ekf{Eigen::Vector2d{1, 10},
+    DeterministicEKF::Dynamic ekf{Eigen::Vector2d{1, 10},
                                Eigen::Matrix2d{{1, 0}, {0, 10}},
                                stateModel,
                                obsModel};
@@ -50,14 +50,14 @@ TEST(StochasticEKFTest, CheckZeroDriftDynamic) {
     EXPECT_NEAR(ekf.Predict()(1), 12, 0.1);
 }
 
-TEST(StochasticEKFTest, ObsMoreThanHidden) {
+TEST(DeterministicEKFTest, ObsMoreThanHidden) {
     const auto stateModel{StochasticModels::CreateRandomWalk<2>(
         Eigen::Matrix2d{{0.1, 0}, {0, 0.1}})};
     const StochasticModels::LinearGaussian::Static<2, 3> obsModel{
         Eigen::MatrixXd{{1, 0}, {1, 0}, {0, 1}},
         Eigen::Matrix3d{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
 
-    StochasticEKF::Static<2, 3, 500> ekf{Eigen::Vector2d{0, 0},
+    DeterministicEKF::Static<2, 3, 500> ekf{Eigen::Vector2d{0, 0},
                                          Eigen::Matrix2d{{1, 0}, {0, 1}},
                                          stateModel,
                                          obsModel};
@@ -70,7 +70,7 @@ TEST(StochasticEKFTest, ObsMoreThanHidden) {
 }
 
 /*
-TEST(StochasticEKFTest, HypothesisTest) {
+TEST(DeterministicEKFTest, HypothesisTest) {
     const double initial{0.};
     const double drift{0.5};
     const double noise{0.1};
@@ -79,7 +79,7 @@ TEST(StochasticEKFTest, HypothesisTest) {
     const auto obsModel{
         StochasticModels::CreateRandomWalk<1>(Eigen::MatrixXd{{noise}})};
 
-    StochasticEKF::Static<1, 1, 500> ekf{
+    DeterministicEKF::Static<1, 1, 500> ekf{
         Eigen::MatrixXd{{initial}}, Eigen::MatrixXd{{1}}, stateModel, obsModel};
 
     const unsigned ITER{1000};

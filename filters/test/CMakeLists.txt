@@ -3,6 +3,7 @@ enable_testing()
 include (GoogleTest)
 
 add_executable(filtersTest
+    deterministicEKFTest.cpp
     kalmanFilterTest.cpp
     particleFilterTest.cpp
     stochasticEKFTest.cpp
